@@ -18,7 +18,11 @@
         "build:web": "cd pickleglass_web && npm run build && cd ..",
         "build:all": "npm run build:renderer && npm run build:web",
         "watch:renderer": "node build.js --watch",
-        "typecheck": "tsc -p tsconfig.json --noEmit"
+        "typecheck": "tsc -p tsconfig.json --noEmit",
+        "drizzle:generate": "drizzle-kit generate",
+        "drizzle:migrate": "drizzle-kit migrate",
+        "services": "docker compose up -d",
+        "services:stop": "docker compose down"
     },
     "keywords": [
         "cinco",
@@ -40,6 +44,7 @@
         "better-sqlite3": "^9.6.0",
         "cors": "^2.8.5",
         "dotenv": "^17.0.0",
+        "drizzle-orm": "^0.44.4",
         "electron-squirrel-startup": "^1.0.1",
         "electron-store": "^8.2.0",
         "electron-updater": "^6.6.2",
@@ -50,6 +55,7 @@
         "keytar": "^7.9.0",
         "node-fetch": "^2.7.0",
         "openai": "^4.70.0",
+        "pg": "^8.16.3",
         "portkey-ai": "^1.10.1",
         "react-hot-toast": "^2.5.2",
         "sharp": "^0.34.2",
@@ -60,13 +66,15 @@
     "devDependencies": {
         "@electron/fuses": "^1.8.0",
         "@electron/notarize": "^2.5.0",
+        "@types/node": "^20.12.0",
+        "@types/pg": "^8.15.5",
+        "drizzle-kit": "^0.31.4",
         "electron": "^30.5.1",
         "electron-builder": "^26.0.12",
         "electron-reloader": "^1.2.3",
         "esbuild": "^0.25.5",
         "prettier": "^3.6.2",
-        "typescript": "^5.5.0",
-        "@types/node": "^20.12.0"
+        "typescript": "^5.5.0"
     },
     "optionalDependencies": {
         "electron-liquid-glass": "^1.0.1"

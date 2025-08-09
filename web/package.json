@@ -7,9 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "biome lint . --unsafe",
-    "format": "biome format . --write",
-    "drizzle:generate": "drizzle-kit generate",
-    "drizzle:migrate": "drizzle-kit migrate"
+    "format": "biome format . --write"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
