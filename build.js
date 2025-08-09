@@ -5,7 +5,7 @@ const baseConfig = {
     bundle: true,
     platform: 'browser',
     format: 'esm',
-    loader: { '.js': 'jsx' },
+    loader: { '.js': 'jsx', '.ts': 'ts', '.tsx': 'tsx' },
     sourcemap: true,
     external: ['electron'],
     define: {
