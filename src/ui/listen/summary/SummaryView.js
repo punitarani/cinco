@@ -464,14 +464,14 @@ export class SummaryView extends LitElement {
 
         return html`
             <div class="insights-container">
-                ${!hasAnyContent
-                    ? html`<div class="empty-state">No insights yet...</div>`
-                    : html`
+                ${
+                    !hasAnyContent
+                        ? html`<div class="empty-state">No insights yet...</div>`
+                        : html`
                         <insights-title>Current Summary</insights-title>
-                        ${data.summary.length > 0
-                            ? data.summary
-                                  .slice(0, 5)
-                                  .map(
+                        ${
+                            data.summary.length > 0
+                                ? data.summary.slice(0, 5).map(
                                       (bullet, index) => html`
                                           <div
                                               class="markdown-content"
@@ -483,14 +483,14 @@ export class SummaryView extends LitElement {
                                           </div>
                                       `
                                   )
-                            : html` <div class="request-item">No content yet...</div> `}
-                        ${data.topic.header
-                            ? html`
+                                : html` <div class="request-item">No content yet...</div> `
+                        }
+                        ${
+                            data.topic.header
+                                ? html`
                                   <insights-title>${data.topic.header}</insights-title>
-                                  ${data.topic.bullets
-                                      .slice(0, 3)
-                                      .map(
-                                          (bullet, index) => html`
+                                  ${data.topic.bullets.slice(0, 3).map(
+                                      (bullet, index) => html`
                                               <div
                                                   class="markdown-content"
                                                   data-markdown-id="topic-${index}"
@@ -500,16 +500,16 @@ export class SummaryView extends LitElement {
                                                   ${bullet}
                                               </div>
                                           `
-                                      )}
+                                  )}
                               `
-                            : ''}
-                        ${data.actions.length > 0
-                            ? html`
+                                : ''
+                        }
+                        ${
+                            data.actions.length > 0
+                                ? html`
                                   <insights-title>Actions</insights-title>
-                                  ${data.actions
-                                      .slice(0, 5)
-                                      .map(
-                                          (action, index) => html`
+                                  ${data.actions.slice(0, 5).map(
+                                      (action, index) => html`
                                               <div
                                                   class="markdown-content"
                                                   data-markdown-id="action-${index}"
@@ -519,11 +519,13 @@ export class SummaryView extends LitElement {
                                                   ${action}
                                               </div>
                                           `
-                                      )}
+                                  )}
                               `
-                            : ''}
-                        ${this.hasCompletedRecording && data.followUps && data.followUps.length > 0
-                            ? html`
+                                : ''
+                        }
+                        ${
+                            this.hasCompletedRecording && data.followUps && data.followUps.length > 0
+                                ? html`
                                   <insights-title>Follow-Ups</insights-title>
                                   ${data.followUps.map(
                                       (followUp, index) => html`
@@ -538,11 +540,13 @@ export class SummaryView extends LitElement {
                                       `
                                   )}
                               `
-                            : ''}
-                    `}
+                                : ''
+                        }
+                    `
+                }
             </div>
         `;
     }
 }
 
-customElements.define('summary-view', SummaryView); 
+customElements.define('summary-view', SummaryView);

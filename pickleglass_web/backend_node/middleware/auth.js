@@ -6,8 +6,8 @@ function identifyUser(req, res, next) {
     } else {
         req.uid = 'default_user';
     }
-    
+
     next();
 }
 
-module.exports = { identifyUser }; 
+module.exports = { identifyUser };

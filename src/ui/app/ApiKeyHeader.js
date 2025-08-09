@@ -323,7 +323,6 @@ export class ApiKeyHeader extends LitElement {
         }
     `;
 
-
     constructor() {
         super();
         this.isLoading = false;
@@ -1094,7 +1093,7 @@ export class ApiKeyHeader extends LitElement {
         const progressHandler = (event, data) => {
             // 통합 LocalAI 이벤트에서 Ollama 진행률만 처리
             if (data.service !== 'ollama') return;
-            
+
             let baseProgress = 0;
             let stageTotal = 0;
 
@@ -1589,12 +1588,12 @@ export class ApiKeyHeader extends LitElement {
 
             if (llmResult.success && sttResult.success) {
                 console.log('[ApiKeyHeader] handleSubmit: Validation successful.');
-                
+
                 // Force refresh the model state to ensure areProvidersConfigured returns true
                 setTimeout(async () => {
                     const isConfigured = await window.api.apiKeyHeader.areProvidersConfigured();
                     console.log('[ApiKeyHeader] Post-validation providers configured check:', isConfigured);
-                    
+
                     if (isConfigured) {
                         this.startSlideOutAnimation();
                     } else {
@@ -1621,12 +1620,11 @@ export class ApiKeyHeader extends LitElement {
     }
     //////// after_modelStateService ////////
 
-
     ////TODO: 뭔가 넘어가는 애니메이션 로직에 문제가 있음
     startSlideOutAnimation() {
         console.log('[ApiKeyHeader] startSlideOutAnimation: Starting slide out animation.');
         this.classList.add('sliding-out');
-        
+
         // Fallback: if animation doesn't trigger animationend event, force transition
         setTimeout(() => {
             if (this.classList.contains('sliding-out')) {
@@ -1846,8 +1844,9 @@ export class ApiKeyHeader extends LitElement {
 
             <!-- Show model status -->
             ${this.renderModelStatus()}
-            ${this.installingModel && !this.installingModel.includes('Ollama')
-                ? html`
+            ${
+                this.installingModel && !this.installingModel.includes('Ollama')
+                    ? html`
                       <div style="margin-top: 3px; display: flex; align-items: center; gap: 6px;">
                           <div style="height: 1px; background: rgba(255,255,255,0.3); border-radius: 0.5px; overflow: hidden; flex: 1;">
                               <div
@@ -1859,7 +1858,8 @@ export class ApiKeyHeader extends LitElement {
                           </div>
                       </div>
                   `
-                : ''}
+                    : ''
+            }
         `;
     }
 
@@ -1966,9 +1966,10 @@ export class ApiKeyHeader extends LitElement {
                     </div>
                     <div class="row">
                         <div class="label">2. Enter API Key</div>
-                        ${this.llmProvider === 'ollama'
-                            ? this._renderOllamaStateUI()
-                            : html`
+                        ${
+                            this.llmProvider === 'ollama'
+                                ? this._renderOllamaStateUI()
+                                : html`
                                   <div class="input-wrapper">
                                       <input
                                           type="password"
@@ -1983,7 +1984,8 @@ export class ApiKeyHeader extends LitElement {
                                       />
                                       ${this.llmError ? html`<div class="inline-error-message">${this.llmError}</div>` : ''}
                                   </div>
-                              `}
+                              `
+                        }
                     </div>
                 </div>
 
@@ -2007,14 +2009,15 @@ export class ApiKeyHeader extends LitElement {
                     </div>
                     <div class="row">
                         <div class="label">4. Enter STT API Key</div>
-                        ${this.sttProvider === 'ollama'
-                            ? html`
+                        ${
+                            this.sttProvider === 'ollama'
+                                ? html`
                                   <div class="api-input" style="background: transparent; border: none; text-align: right; color: #a0a0a0;">
                                       STT not supported by Ollama
                                   </div>
                               `
-                            : this.sttProvider === 'whisper'
-                              ? html`
+                                : this.sttProvider === 'whisper'
+                                  ? html`
                                     <div class="input-wrapper">
                                         <select
                                             class="api-input ${this.sttError ? 'invalid' : ''}"
@@ -2036,7 +2039,7 @@ export class ApiKeyHeader extends LitElement {
                                         ${this.sttError ? html`<div class="inline-error-message">${this.sttError}</div>` : ''}
                                     </div>
                                 `
-                              : html`
+                                  : html`
                                     <div class="input-wrapper">
                                         <input
                                             type="password"
@@ -2051,18 +2054,21 @@ export class ApiKeyHeader extends LitElement {
                                         />
                                         ${this.sttError ? html`<div class="inline-error-message">${this.sttError}</div>` : ''}
                                     </div>
-                                `}
+                                `
+                        }
                     </div>
                 </div>
                 <div class="confirm-button-container">
                     <button class="confirm-button" @click=${this.handleSubmit} ?disabled=${isButtonDisabled}>
-                        ${this.isLoading
-                            ? 'Setting up...'
-                            : this.installingModel
-                              ? `Installing ${this.installingModel}...`
-                              : Object.keys(this.whisperInstallingModels).length > 0
-                                ? `Downloading...`
-                                : 'Confirm'}
+                        ${
+                            this.isLoading
+                                ? 'Setting up...'
+                                : this.installingModel
+                                  ? `Installing ${this.installingModel}...`
+                                  : Object.keys(this.whisperInstallingModels).length > 0
+                                    ? `Downloading...`
+                                    : 'Confirm'
+                        }
                     </button>
                 </div>
 

@@ -8,7 +8,7 @@ class WhisperModelRepository extends BaseModelRepository {
     async initializeModels(availableModels) {
         const existingModels = await this.getAll();
         const existingIds = new Set(existingModels.map(m => m.id));
-        
+
         for (const [modelId, modelInfo] of Object.entries(availableModels)) {
             if (!existingIds.has(modelId)) {
                 await this.create({
@@ -16,7 +16,7 @@ class WhisperModelRepository extends BaseModelRepository {
                     name: modelInfo.name,
                     size: modelInfo.size,
                     installed: 0,
-                    installing: 0
+                    installing: 0,
                 });
             }
         }
@@ -27,16 +27,22 @@ class WhisperModelRepository extends BaseModelRepository {
     }
 
     async setInstalled(modelId, installed = true) {
-        return this.update({ id: modelId }, { 
-            installed: installed ? 1 : 0,
-            installing: 0
-        });
+        return this.update(
+            { id: modelId },
+            {
+                installed: installed ? 1 : 0,
+                installing: 0,
+            }
+        );
     }
 
     async setInstalling(modelId, installing = true) {
-        return this.update({ id: modelId }, { 
-            installing: installing ? 1 : 0 
-        });
+        return this.update(
+            { id: modelId },
+            {
+                installing: installing ? 1 : 0,
+            }
+        );
     }
 
     async isInstalled(modelId) {

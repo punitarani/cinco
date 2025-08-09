@@ -19,7 +19,7 @@ class DeepgramProvider {
         try {
             // ✨ 변경점: SDK 대신 직접 fetch로 API를 호출하여 안정성 확보 (openai.js 방식)
             const response = await fetch('https://api.deepgram.com/v1/projects', {
-                headers: { 'Authorization': `Token ${key}` }
+                headers: { Authorization: `Token ${key}` },
             });
 
             if (response.ok) {
@@ -36,76 +36,81 @@ class DeepgramProvider {
     }
 }
 
-function createSTT({
-    apiKey,
-    language = 'en-US',
-    sampleRate = 24000,
-    callbacks = {},
-  }) {
+function createSTT({ apiKey, language = 'en-US', sampleRate = 24000, callbacks = {} }) {
     const qs = new URLSearchParams({
-      model: 'nova-3',
-      encoding: 'linear16',
-      sample_rate: sampleRate.toString(),
-      language,
-      smart_format: 'true',
-      interim_results: 'true',
-      channels: '1',
+        model: 'nova-3',
+        encoding: 'linear16',
+        sample_rate: sampleRate.toString(),
+        language,
+        smart_format: 'true',
+        interim_results: 'true',
+        channels: '1',
     });
-  
+
     const url = `wss://api.deepgram.com/v1/listen?${qs}`;
-  
+
     const ws = new WebSocket(url, {
-      headers: { Authorization: `Token ${apiKey}` },
+        headers: { Authorization: `Token ${apiKey}` },
     });
     ws.binaryType = 'arraybuffer';
-  
+
     return new Promise((resolve, reject) => {
-      const to = setTimeout(() => {
-        ws.terminate();
-        reject(new Error('DG open timeout (10 s)'));
-      }, 10_000);
-  
-      ws.on('open', () => {
-        clearTimeout(to);
-        resolve({
-          sendRealtimeInput: (buf) => ws.send(buf),
-          close: () => ws.close(1000, 'client'),
+        const to = setTimeout(() => {
+            ws.terminate();
+            reject(new Error('DG open timeout (10 s)'));
+        }, 10_000);
+
+        ws.on('open', () => {
+            clearTimeout(to);
+            resolve({
+                sendRealtimeInput: buf => ws.send(buf),
+                close: () => ws.close(1000, 'client'),
+            });
         });
-      });
-  
-      ws.on('message', raw => {
-        let msg;
-        try { msg = JSON.parse(raw.toString()); } catch { return; }
-        if (msg.channel?.alternatives?.[0]?.transcript !== undefined) {
-          callbacks.onmessage?.({ provider: 'deepgram', ...msg });
-        }
-      });
-  
-      ws.on('close', (code, reason) =>
-        callbacks.onclose?.({ code, reason: reason.toString() })
-      );
-  
-      ws.on('error', err => {
-        clearTimeout(to);
-        callbacks.onerror?.(err);
-        reject(err);
-      });
+
+        ws.on('message', raw => {
+            let msg;
+            try {
+                msg = JSON.parse(raw.toString());
+            } catch {
+                return;
+            }
+            if (msg.channel?.alternatives?.[0]?.transcript !== undefined) {
+                callbacks.onmessage?.({ provider: 'deepgram', ...msg });
+            }
+        });
+
+        ws.on('close', (code, reason) => callbacks.onclose?.({ code, reason: reason.toString() }));
+
+        ws.on('error', err => {
+            clearTimeout(to);
+            callbacks.onerror?.(err);
+            reject(err);
+        });
     });
-  }
+}
 
 // ... (LLM 관련 Placeholder 함수들은 그대로 유지) ...
 function createLLM(opts) {
-  console.warn("[Deepgram] LLM not supported.");
-  return { generateContent: async () => { throw new Error("Deepgram does not support LLM functionality."); } };
+    console.warn('[Deepgram] LLM not supported.');
+    return {
+        generateContent: async () => {
+            throw new Error('Deepgram does not support LLM functionality.');
+        },
+    };
 }
 function createStreamingLLM(opts) {
-  console.warn("[Deepgram] Streaming LLM not supported.");
-  return { streamChat: async () => { throw new Error("Deepgram does not support Streaming LLM functionality."); } };
+    console.warn('[Deepgram] Streaming LLM not supported.');
+    return {
+        streamChat: async () => {
+            throw new Error('Deepgram does not support Streaming LLM functionality.');
+        },
+    };
 }
 
 module.exports = {
     DeepgramProvider,
     createSTT,
     createLLM,
-    createStreamingLLM
+    createStreamingLLM,
 };

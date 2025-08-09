@@ -9,15 +9,17 @@ function createApp(eventBridge) {
     const webUrl = process.env.pickleglass_WEB_URL || 'http://localhost:3000';
     console.log(`🔧 Backend CORS configured for: ${webUrl}`);
 
-    app.use(cors({
-        origin: webUrl,
-        credentials: true,
-    }));
+    app.use(
+        cors({
+            origin: webUrl,
+            credentials: true,
+        })
+    );
 
     app.use(express.json());
 
     app.get('/', (req, res) => {
-        res.json({ message: "pickleglass API is running" });
+        res.json({ message: 'pickleglass API is running' });
     });
 
     app.use((req, res, next) => {
@@ -36,16 +38,16 @@ function createApp(eventBridge) {
         res.json({
             status: 'online',
             timestamp: new Date().toISOString(),
-            version: '1.0.0'
+            version: '1.0.0',
         });
     });
 
     app.post('/api/desktop/set-user', (req, res) => {
         res.json({
             success: true,
-            message: "Direct IPC communication is now used. This endpoint is deprecated.",
+            message: 'Direct IPC communication is now used. This endpoint is deprecated.',
             user: req.body,
-            deprecated: true
+            deprecated: true,
         });
     });
 
@@ -53,8 +55,8 @@ function createApp(eventBridge) {
         res.json({
             connected: true,
             current_user: null,
-            communication_method: "IPC",
-            file_based_deprecated: true
+            communication_method: 'IPC',
+            file_based_deprecated: true,
         });
     });
 

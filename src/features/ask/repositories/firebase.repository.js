@@ -5,7 +5,7 @@ const { createEncryptedConverter } = require('../../common/repositories/firestor
 const aiMessageConverter = createEncryptedConverter(['content']);
 
 function aiMessagesCol(sessionId) {
-    if (!sessionId) throw new Error("Session ID is required to access AI messages.");
+    if (!sessionId) throw new Error('Session ID is required to access AI messages.');
     const db = getFirestoreInstance();
     return collection(db, `sessions/${sessionId}/ai_messages`).withConverter(aiMessageConverter);
 }
@@ -21,7 +21,7 @@ async function addAiMessage({ uid, sessionId, role, content, model = 'unknown' }
         model,
         created_at: now,
     };
-    
+
     const docRef = await addDoc(aiMessagesCol(sessionId), newMessage);
     return { id: docRef.id };
 }
@@ -35,4 +35,4 @@ async function getAllAiMessagesBySessionId(sessionId) {
 module.exports = {
     addAiMessage,
     getAllAiMessagesBySessionId,
-}; 
+};

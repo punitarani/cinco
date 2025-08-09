@@ -779,9 +779,9 @@ export class AskView extends LitElement {
                 if (!this.showTextInput) {
                     this.showTextInput = true;
                     this.updateComplete.then(() => this.focusTextInput());
-                  } else {
+                } else {
                     this.focusTextInput();
-                  }
+                }
             });
 
             window.api.askView.onScrollResponseUp(() => this.handleScroll('up'));
@@ -789,20 +789,20 @@ export class AskView extends LitElement {
             window.api.askView.onAskStateUpdate((event, newState) => {
                 this.currentResponse = newState.currentResponse;
                 this.currentQuestion = newState.currentQuestion;
-                this.isLoading       = newState.isLoading;
-                this.isStreaming     = newState.isStreaming;
-              
+                this.isLoading = newState.isLoading;
+                this.isStreaming = newState.isStreaming;
+
                 const wasHidden = !this.showTextInput;
                 this.showTextInput = newState.showTextInput;
-              
+
                 if (newState.showTextInput) {
-                  if (wasHidden) {
-                    this.updateComplete.then(() => this.focusTextInput());
-                  } else {
-                    this.focusTextInput();
-                  }
+                    if (wasHidden) {
+                        this.updateComplete.then(() => this.focusTextInput());
+                    } else {
+                        this.focusTextInput();
+                    }
                 }
-              });
+            });
             console.log('AskView: IPC 이벤트 리스너 등록 완료');
         }
     }
@@ -837,7 +837,6 @@ export class AskView extends LitElement {
             console.log('✅ AskView: IPC 이벤트 리스너 제거 필요');
         }
     }
-
 
     async loadLibraries() {
         try {
@@ -938,7 +937,6 @@ export class AskView extends LitElement {
         });
     }
 
-
     loadScript(src) {
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
@@ -989,11 +987,10 @@ export class AskView extends LitElement {
         }
     }
 
-
     renderContent() {
         const responseContainer = this.shadowRoot.getElementById('responseContainer');
         if (!responseContainer) return;
-    
+
         // Check loading state
         if (this.isLoading) {
             responseContainer.innerHTML = `
@@ -1005,14 +1002,14 @@ export class AskView extends LitElement {
             this.resetStreamingParser();
             return;
         }
-        
+
         // If there is no response, show empty state
         if (!this.currentResponse) {
             responseContainer.innerHTML = `<div class="empty-state">...</div>`;
             this.resetStreamingParser();
             return;
         }
-        
+
         // Set streaming markdown parser
         this.renderStreamingMarkdown(responseContainer);
 
@@ -1032,7 +1029,7 @@ export class AskView extends LitElement {
             if (!this.smdParser || this.smdContainer !== responseContainer) {
                 this.smdContainer = responseContainer;
                 this.smdContainer.innerHTML = '';
-                
+
                 // smd.js의 default_renderer 사용
                 const renderer = default_renderer(this.smdContainer);
                 this.smdParser = parser(renderer);
@@ -1042,7 +1039,7 @@ export class AskView extends LitElement {
             // 새로운 텍스트만 처리 (스트리밍 최적화)
             const currentText = this.currentResponse;
             const newText = currentText.slice(this.lastProcessedLength);
-            
+
             if (newText.length > 0) {
                 // 새로운 텍스트 청크를 파서에 전달
                 parser_write(this.smdParser, newText);
@@ -1066,7 +1063,6 @@ export class AskView extends LitElement {
 
             // 스크롤을 맨 아래로
             responseContainer.scrollTop = responseContainer.scrollHeight;
-            
         } catch (error) {
             console.error('Error rendering streaming markdown:', error);
             // 에러 발생 시 기본 텍스트 렌더링으로 폴백
@@ -1076,7 +1072,7 @@ export class AskView extends LitElement {
 
     renderFallbackContent(responseContainer) {
         const textToRender = this.currentResponse || '';
-        
+
         if (this.isLibrariesLoaded && this.marked && this.DOMPurify) {
             try {
                 // 마크다운 파싱
@@ -1085,9 +1081,37 @@ export class AskView extends LitElement {
                 // DOMPurify로 정제
                 const cleanHtml = this.DOMPurify.sanitize(parsedHtml, {
                     ALLOWED_TAGS: [
-                        'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'strong', 'b', 'em', 'i',
-                        'ul', 'ol', 'li', 'blockquote', 'code', 'pre', 'a', 'img', 'table', 'thead',
-                        'tbody', 'tr', 'th', 'td', 'hr', 'sup', 'sub', 'del', 'ins',
+                        'h1',
+                        'h2',
+                        'h3',
+                        'h4',
+                        'h5',
+                        'h6',
+                        'p',
+                        'br',
+                        'strong',
+                        'b',
+                        'em',
+                        'i',
+                        'ul',
+                        'ol',
+                        'li',
+                        'blockquote',
+                        'code',
+                        'pre',
+                        'a',
+                        'img',
+                        'table',
+                        'thead',
+                        'tbody',
+                        'tr',
+                        'th',
+                        'td',
+                        'hr',
+                        'sup',
+                        'sub',
+                        'del',
+                        'ins',
                     ],
                     ALLOWED_ATTR: ['href', 'src', 'alt', 'title', 'class', 'id', 'target', 'rel'],
                 });
@@ -1119,7 +1143,6 @@ export class AskView extends LitElement {
             responseContainer.innerHTML = `<p>${basicHtml}</p>`;
         }
     }
-
 
     requestWindowResize(targetHeight) {
         if (window.api) {
@@ -1199,7 +1222,6 @@ export class AskView extends LitElement {
 
         return text;
     }
-
 
     async handleCopy() {
         if (this.copyState === 'copied') return;
@@ -1300,16 +1322,16 @@ export class AskView extends LitElement {
 
     updated(changedProperties) {
         super.updated(changedProperties);
-    
+
         // ✨ isLoading 또는 currentResponse가 변경될 때마다 뷰를 다시 그립니다.
         if (changedProperties.has('isLoading') || changedProperties.has('currentResponse')) {
             this.renderContent();
         }
-    
+
         if (changedProperties.has('showTextInput') || changedProperties.has('isLoading') || changedProperties.has('currentResponse')) {
             this.adjustWindowHeightThrottled();
         }
-    
+
         if (changedProperties.has('showTextInput') && this.showTextInput) {
             this.focusTextInput();
         }
@@ -1319,14 +1341,11 @@ export class AskView extends LitElement {
         setTimeout(() => this.adjustWindowHeight(), 200);
     }
 
-
     getTruncatedQuestion(question, maxLength = 30) {
         if (!question) return '';
         if (question.length <= maxLength) return question;
         return question.substring(0, maxLength) + '...';
     }
-
-
 
     render() {
         const hasResponse = this.isLoading || this.currentResponse || this.isStreaming;
@@ -1407,24 +1426,25 @@ export class AskView extends LitElement {
     adjustWindowHeight() {
         if (!window.api) return;
 
-        this.updateComplete.then(() => {
-            const headerEl = this.shadowRoot.querySelector('.response-header');
-            const responseEl = this.shadowRoot.querySelector('.response-container');
-            const inputEl = this.shadowRoot.querySelector('.text-input-container');
+        this.updateComplete
+            .then(() => {
+                const headerEl = this.shadowRoot.querySelector('.response-header');
+                const responseEl = this.shadowRoot.querySelector('.response-container');
+                const inputEl = this.shadowRoot.querySelector('.text-input-container');
 
-            if (!headerEl || !responseEl) return;
+                if (!headerEl || !responseEl) return;
 
-            const headerHeight = headerEl.classList.contains('hidden') ? 0 : headerEl.offsetHeight;
-            const responseHeight = responseEl.scrollHeight;
-            const inputHeight = (inputEl && !inputEl.classList.contains('hidden')) ? inputEl.offsetHeight : 0;
+                const headerHeight = headerEl.classList.contains('hidden') ? 0 : headerEl.offsetHeight;
+                const responseHeight = responseEl.scrollHeight;
+                const inputHeight = inputEl && !inputEl.classList.contains('hidden') ? inputEl.offsetHeight : 0;
 
-            const idealHeight = headerHeight + responseHeight + inputHeight;
+                const idealHeight = headerHeight + responseHeight + inputHeight;
 
-            const targetHeight = Math.min(700, idealHeight);
+                const targetHeight = Math.min(700, idealHeight);
 
-            window.api.askView.adjustWindowHeight("ask", targetHeight);
-
-        }).catch(err => console.error('AskView adjustWindowHeight error:', err));
+                window.api.askView.adjustWindowHeight('ask', targetHeight);
+            })
+            .catch(err => console.error('AskView adjustWindowHeight error:', err));
     }
 
     // Throttled wrapper to avoid excessive IPC spam (executes at most once per animation frame)

@@ -45,7 +45,7 @@ export class PickleGlassApp extends LitElement {
         layoutMode: { type: String },
         _viewInstances: { type: Object, state: true },
         _isClickThrough: { state: true },
-        structuredData: { type: Object }, 
+        structuredData: { type: Object },
     };
 
     constructor() {
@@ -54,7 +54,7 @@ export class PickleGlassApp extends LitElement {
         this.currentView = urlParams.get('view') || 'listen';
         this.currentResponseIndex = -1;
         this.selectedProfile = localStorage.getItem('selectedProfile') || 'interview';
-        
+
         // Language format migration for legacy users
         let lang = localStorage.getItem('selectedLanguage') || 'en';
         if (lang.includes('-')) {
@@ -68,12 +68,11 @@ export class PickleGlassApp extends LitElement {
         this.selectedScreenshotInterval = localStorage.getItem('selectedScreenshotInterval') || '5';
         this.selectedImageQuality = localStorage.getItem('selectedImageQuality') || 'medium';
         this._isClickThrough = false;
-
     }
 
     connectedCallback() {
         super.connectedCallback();
-        
+
         if (window.api) {
             window.api.pickleGlassApp.onClickThroughToggled((_, isEnabled) => {
                 this._isClickThrough = isEnabled;
@@ -122,9 +121,6 @@ export class PickleGlassApp extends LitElement {
             await window.api.common.quitApplication();
         }
     }
-
-
-
 
     render() {
         switch (this.currentView) {

@@ -12,7 +12,8 @@
         "build": "npm run build:all && electron-builder --config electron-builder.yml --publish never",
         "build:win": "npm run build:all && electron-builder --win --x64 --publish never",
         "publish": "npm run build:all && electron-builder --config electron-builder.yml --publish always",
-        "lint": "eslint --ext .ts,.tsx,.js .",
+        "lint": "biome lint . --unsafe",
+        "format": "biome format --write .",
         "postinstall": "electron-builder install-app-deps",
         "build:renderer": "node build.js",
         "build:web": "cd pickleglass_web && npm run build && cd ..",
@@ -64,6 +65,7 @@
         "ws": "^8.18.0"
     },
     "devDependencies": {
+        "@biomejs/biome": "^2.1.4",
         "@electron/fuses": "^1.8.0",
         "@electron/notarize": "^2.5.0",
         "@types/node": "^20.12.0",

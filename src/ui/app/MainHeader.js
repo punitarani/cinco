@@ -359,10 +359,14 @@ export class MainHeader extends LitElement {
 
     _getListenButtonText(status) {
         switch (status) {
-            case 'beforeSession': return 'Listen';
-            case 'inSession'   : return 'Stop';
-            case 'afterSession': return 'Done';
-            default            : return 'Listen';
+            case 'beforeSession':
+                return 'Listen';
+            case 'inSession':
+                return 'Stop';
+            case 'afterSession':
+                return 'Done';
+            default:
+                return 'Listen';
         }
     }
 
@@ -388,7 +392,7 @@ export class MainHeader extends LitElement {
 
         const deltaX = Math.abs(e.screenX - this.dragState.initialMouseX);
         const deltaY = Math.abs(e.screenY - this.dragState.initialMouseY);
-        
+
         if (deltaX > 3 || deltaY > 3) {
             this.dragState.moved = true;
         }
@@ -420,14 +424,14 @@ export class MainHeader extends LitElement {
             console.log('[MainHeader] Animation already in progress, ignoring toggle');
             return;
         }
-        
+
         if (this.animationEndTimer) {
             clearTimeout(this.animationEndTimer);
             this.animationEndTimer = null;
         }
-        
+
         this.isAnimating = true;
-        
+
         if (this.isVisible) {
             this.hide();
         } else {
@@ -439,17 +443,17 @@ export class MainHeader extends LitElement {
         this.classList.remove('showing');
         this.classList.add('hiding');
     }
-    
+
     show() {
         this.classList.remove('hiding', 'hidden');
         this.classList.add('showing');
     }
-    
+
     handleAnimationEnd(e) {
         if (e.target !== this) return;
-    
+
         this.isAnimating = false;
-    
+
         if (this.classList.contains('hiding')) {
             this.classList.add('hidden');
             if (window.api) {
@@ -472,14 +476,14 @@ export class MainHeader extends LitElement {
         this.addEventListener('animationend', this.handleAnimationEnd);
 
         if (window.api) {
-
             this._sessionStateTextListener = (event, { success }) => {
                 if (success) {
-                    this.listenSessionStatus = ({
-                        beforeSession: 'inSession',
-                        inSession: 'afterSession',
-                        afterSession: 'beforeSession',
-                    })[this.listenSessionStatus] || 'beforeSession';
+                    this.listenSessionStatus =
+                        {
+                            beforeSession: 'inSession',
+                            inSession: 'afterSession',
+                            afterSession: 'beforeSession',
+                        }[this.listenSessionStatus] || 'beforeSession';
                 } else {
                     this.listenSessionStatus = 'beforeSession';
                 }
@@ -498,12 +502,12 @@ export class MainHeader extends LitElement {
     disconnectedCallback() {
         super.disconnectedCallback();
         this.removeEventListener('animationend', this.handleAnimationEnd);
-        
+
         if (this.animationEndTimer) {
             clearTimeout(this.animationEndTimer);
             this.animationEndTimer = null;
         }
-        
+
         if (window.api) {
             if (this._sessionStateTextListener) {
                 window.api.mainHeader.removeOnListenChangeSessionResult(this._sessionStateTextListener);
@@ -519,7 +523,6 @@ export class MainHeader extends LitElement {
         if (window.api) {
             console.log(`[MainHeader] showSettingsWindow called at ${Date.now()}`);
             window.api.mainHeader.showSettingsWindow();
-
         }
     }
 
@@ -574,33 +577,40 @@ export class MainHeader extends LitElement {
         }
     }
 
-
     renderShortcut(accelerator) {
         if (!accelerator) return html``;
 
         const keyMap = {
-            'Cmd': '⌘', 'Command': '⌘',
-            'Ctrl': '⌃', 'Control': '⌃',
-            'Alt': '⌥', 'Option': '⌥',
-            'Shift': '⇧',
-            'Enter': '↵',
-            'Backspace': '⌫',
-            'Delete': '⌦',
-            'Tab': '⇥',
-            'Escape': '⎋',
-            'Up': '↑', 'Down': '↓', 'Left': '←', 'Right': '→',
+            Cmd: '⌘',
+            Command: '⌘',
+            Ctrl: '⌃',
+            Control: '⌃',
+            Alt: '⌥',
+            Option: '⌥',
+            Shift: '⇧',
+            Enter: '↵',
+            Backspace: '⌫',
+            Delete: '⌦',
+            Tab: '⇥',
+            Escape: '⎋',
+            Up: '↑',
+            Down: '↓',
+            Left: '←',
+            Right: '→',
             '\\': html`<svg viewBox="0 0 6 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:6px; height:12px;"><path d="M1.5 1.3L5.1 10.6" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
         };
 
         const keys = accelerator.split('+');
-        return html`${keys.map(key => html`
+        return html`${keys.map(
+            key => html`
             <div class="icon-box">${keyMap[key] || key}</div>
-        `)}`;
+        `
+        )}`;
     }
 
     render() {
         const listenButtonText = this._getListenButtonText(this.listenSessionStatus);
-    
+
         const buttonClasses = {
             active: listenButtonText === 'Stop',
             done: listenButtonText === 'Done',
@@ -610,36 +620,42 @@ export class MainHeader extends LitElement {
         return html`
             <div class="header" @mousedown=${this.handleMouseDown}>
                 <button 
-                    class="listen-button ${Object.keys(buttonClasses).filter(k => buttonClasses[k]).join(' ')}"
+                    class="listen-button ${Object.keys(buttonClasses)
+                        .filter(k => buttonClasses[k])
+                        .join(' ')}"
                     @click=${this._handleListenClick}
                     ?disabled=${this.isTogglingSession}
                 >
-                    ${this.isTogglingSession
-                        ? html`
+                    ${
+                        this.isTogglingSession
+                            ? html`
                             <div class="loading-dots">
                                 <span></span><span></span><span></span>
                             </div>
                         `
-                        : html`
+                            : html`
                             <div class="action-text">
                                 <div class="action-text-content">${listenButtonText}</div>
                             </div>
                             <div class="listen-icon">
-                                ${showStopIcon
-                                    ? html`
+                                ${
+                                    showStopIcon
+                                        ? html`
                                         <svg width="9" height="9" viewBox="0 0 9 9" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <rect width="9" height="9" rx="1" fill="white"/>
                                         </svg>
                                     `
-                                    : html`
+                                        : html`
                                         <svg width="12" height="11" viewBox="0 0 12 11" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <path d="M1.69922 2.7515C1.69922 2.37153 2.00725 2.0635 2.38722 2.0635H2.73122C3.11119 2.0635 3.41922 2.37153 3.41922 2.7515V8.2555C3.41922 8.63547 3.11119 8.9435 2.73122 8.9435H2.38722C2.00725 8.9435 1.69922 8.63547 1.69922 8.2555V2.7515Z" fill="white"/>
                                             <path d="M5.13922 1.3755C5.13922 0.995528 5.44725 0.6875 5.82722 0.6875H6.17122C6.55119 0.6875 6.85922 0.995528 6.85922 1.3755V9.6315C6.85922 10.0115 6.55119 10.3195 6.17122 10.3195H5.82722C5.44725 10.3195 5.13922 10.0115 5.13922 9.6315V1.3755Z" fill="white"/>
                                             <path d="M8.57922 3.0955C8.57922 2.71553 8.88725 2.4075 9.26722 2.4075H9.61122C9.99119 2.4075 10.2992 2.71553 10.2992 3.0955V7.9115C10.2992 8.29147 9.99119 8.5995 9.61122 8.5995H9.26722C8.88725 8.5995 8.57922 8.29147 8.57922 7.9115V3.0955Z" fill="white"/>
                                         </svg>
-                                    `}
+                                    `
+                                }
                             </div>
-                        `}
+                        `
+                    }
                 </button>
 
                 <div class="header-actions ask-action" @click=${() => this._handleAskClick()}>
@@ -662,7 +678,7 @@ export class MainHeader extends LitElement {
 
                 <button 
                     class="settings-button"
-                    @mouseenter=${(e) => this.showSettingsWindow(e.currentTarget)}
+                    @mouseenter=${e => this.showSettingsWindow(e.currentTarget)}
                     @mouseleave=${() => this.hideSettingsWindow()}
                 >
                     <div class="settings-icon">

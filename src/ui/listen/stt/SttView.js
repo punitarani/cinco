@@ -167,12 +167,14 @@ export class SttView extends LitElement {
         }
 
         this.sttMessages = newMessages;
-        
+
         // Notify parent component about message updates
-        this.dispatchEvent(new CustomEvent('stt-messages-updated', {
-            detail: { messages: this.sttMessages },
-            bubbles: true
-        }));
+        this.dispatchEvent(
+            new CustomEvent('stt-messages-updated', {
+                detail: { messages: this.sttMessages },
+                bubbles: true,
+            })
+        );
     }
 
     scrollToBottom() {
@@ -210,17 +212,20 @@ export class SttView extends LitElement {
 
         return html`
             <div class="transcription-container">
-                ${this.sttMessages.length === 0
-                    ? html`<div class="empty-state">Waiting for speech...</div>`
-                    : this.sttMessages.map(msg => html`
+                ${
+                    this.sttMessages.length === 0
+                        ? html`<div class="empty-state">Waiting for speech...</div>`
+                        : this.sttMessages.map(
+                              msg => html`
                         <div class="stt-message ${this.getSpeakerClass(msg.speaker)}">
                             ${msg.text}
                         </div>
-                    `)
+                    `
+                          )
                 }
             </div>
         `;
     }
 }
 
-customElements.define('stt-view', SttView); 
+customElements.define('stt-view', SttView);

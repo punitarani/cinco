@@ -26,20 +26,20 @@ router.get('/profile', async (req, res) => {
 router.post('/find-or-create', async (req, res) => {
     try {
         console.log('[API] find-or-create request received:', req.body);
-        
+
         if (!req.body || !req.body.uid) {
             return res.status(400).json({ error: 'User data with uid is required' });
         }
-        
+
         const user = await ipcRequest(req, 'find-or-create-user', req.body);
         console.log('[API] find-or-create response:', user);
         res.status(200).json(user);
     } catch (error) {
         console.error('Failed to find or create user via IPC:', error);
         console.error('Request body:', req.body);
-        res.status(500).json({ 
+        res.status(500).json({
             error: 'Failed to find or create user',
-            details: error.message 
+            details: error.message,
         });
     }
 });
@@ -79,7 +79,7 @@ router.get('/batch', async (req, res) => {
     try {
         const result = await ipcRequest(req, 'get-batch-data', req.query.include);
         res.json(result);
-    } catch(error) {
+    } catch (error) {
         console.error('Failed to get batch data via IPC:', error);
         res.status(500).json({ error: 'Failed to get batch data' });
     }

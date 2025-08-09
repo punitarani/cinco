@@ -1,4 +1,4 @@
-const http = require('http');
+const http = require('node:http');
 const fetch = require('node-fetch');
 
 // Request Queue System for Ollama API (only for non-streaming requests)
@@ -14,10 +14,10 @@ class RequestQueue {
         while (this.processing) {
             await new Promise(resolve => setTimeout(resolve, 50));
         }
-        
+
         this.streamingActive = true;
         console.log('[Ollama Queue] Starting streaming request (priority)');
-        
+
         try {
             const result = await requestFn();
             return result;
@@ -56,7 +56,7 @@ class RequestQueue {
             }
 
             const { requestFn, resolve, reject } = this.queue.shift();
-            
+
             try {
                 console.log(`[Ollama Queue] Processing queued request (${this.queue.length} remaining)`);
                 const result = await requestFn();
@@ -89,13 +89,12 @@ class OllamaProvider {
     }
 }
 
-
 function convertMessagesToOllamaFormat(messages) {
     return messages.map(msg => {
         if (Array.isArray(msg.content)) {
             let textContent = '';
             const images = [];
-            
+
             for (const part of msg.content) {
                 if (part.type === 'text') {
                     textContent += part.text;
@@ -104,11 +103,11 @@ function convertMessagesToOllamaFormat(messages) {
                     images.push(base64);
                 }
             }
-            
+
             return {
                 role: msg.role,
                 content: textContent,
-                ...(images.length > 0 && { images })
+                ...(images.length > 0 && { images }),
             };
         } else {
             return msg;
@@ -116,18 +115,12 @@ function convertMessagesToOllamaFormat(messages) {
     });
 }
 
-function createLLM({ 
-    model, 
-    temperature = 0.7, 
-    maxTokens = 2048, 
-    baseUrl = 'http://localhost:11434',
-    ...config 
-}) {
+function createLLM({ model, temperature = 0.7, maxTokens = 2048, baseUrl = 'http://localhost:11434', ...config }) {
     if (!model) {
         throw new Error('Model parameter is required for Ollama LLM. Please specify a model name (e.g., "llama3.2:latest", "gemma3:4b")');
     }
     return {
-        generateContent: async (parts) => {
+        generateContent: async parts => {
             let systemPrompt = '';
             const userContent = [];
 
@@ -141,7 +134,7 @@ function createLLM({
                 } else if (part.inlineData) {
                     userContent.push({
                         type: 'image',
-                        image: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`
+                        image: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
                     });
                 }
             }
@@ -165,8 +158,8 @@ function createLLM({
                             options: {
                                 temperature,
                                 num_predict: maxTokens,
-                            }
-                        })
+                            },
+                        }),
                     });
 
                     if (!response.ok) {
@@ -174,12 +167,12 @@ function createLLM({
                     }
 
                     const result = await response.json();
-                    
+
                     return {
                         response: {
-                            text: () => result.message.content
+                            text: () => result.message.content,
                         },
-                        raw: result
+                        raw: result,
                     };
                 } catch (error) {
                     console.error('Ollama LLM error:', error);
@@ -188,7 +181,7 @@ function createLLM({
             });
         },
 
-        chat: async (messages) => {
+        chat: async messages => {
             const ollamaMessages = convertMessagesToOllamaFormat(messages);
 
             // Use request queue to prevent concurrent API calls
@@ -204,8 +197,8 @@ function createLLM({
                             options: {
                                 temperature,
                                 num_predict: maxTokens,
-                            }
-                        })
+                            },
+                        }),
                     });
 
                     if (!response.ok) {
@@ -213,32 +206,26 @@ function createLLM({
                     }
 
                     const result = await response.json();
-                    
+
                     return {
                         content: result.message.content,
-                        raw: result
+                        raw: result,
                     };
                 } catch (error) {
                     console.error('Ollama chat error:', error);
                     throw error;
                 }
             });
-        }
+        },
     };
 }
 
-function createStreamingLLM({ 
-    model, 
-    temperature = 0.7, 
-    maxTokens = 2048, 
-    baseUrl = 'http://localhost:11434',
-    ...config 
-}) {
+function createStreamingLLM({ model, temperature = 0.7, maxTokens = 2048, baseUrl = 'http://localhost:11434', ...config }) {
     if (!model) {
         throw new Error('Model parameter is required for Ollama streaming LLM. Please specify a model name (e.g., "llama3.2:latest", "gemma3:4b")');
     }
     return {
-        streamChat: async (messages) => {
+        streamChat: async messages => {
             console.log('[Ollama Provider] Starting streaming request');
 
             const ollamaMessages = convertMessagesToOllamaFormat(messages);
@@ -257,8 +244,8 @@ function createStreamingLLM({
                             options: {
                                 temperature,
                                 num_predict: maxTokens,
-                            }
-                        })
+                            },
+                        }),
                     });
 
                     if (!response.ok) {
@@ -272,28 +259,30 @@ function createStreamingLLM({
                             let buffer = '';
 
                             try {
-                                response.body.on('data', (chunk) => {
+                                response.body.on('data', chunk => {
                                     buffer += chunk.toString();
                                     const lines = buffer.split('\n');
                                     buffer = lines.pop() || '';
 
                                     for (const line of lines) {
                                         if (line.trim() === '') continue;
-                                        
+
                                         try {
                                             const data = JSON.parse(line);
-                                            
+
                                             if (data.message?.content) {
                                                 const sseData = JSON.stringify({
-                                                    choices: [{
-                                                        delta: {
-                                                            content: data.message.content
-                                                        }
-                                                    }]
+                                                    choices: [
+                                                        {
+                                                            delta: {
+                                                                content: data.message.content,
+                                                            },
+                                                        },
+                                                    ],
                                                 });
                                                 controller.enqueue(new TextEncoder().encode(`data: ${sseData}\n\n`));
                                             }
-                                            
+
                                             if (data.done) {
                                                 controller.enqueue(new TextEncoder().encode('data: [DONE]\n\n'));
                                             }
@@ -308,29 +297,27 @@ function createStreamingLLM({
                                     console.log('[Ollama Provider] Streaming completed');
                                 });
 
-                                response.body.on('error', (error) => {
+                                response.body.on('error', error => {
                                     console.error('[Ollama Provider] Streaming error:', error);
                                     controller.error(error);
                                 });
-                                
                             } catch (error) {
                                 console.error('[Ollama Provider] Streaming setup error:', error);
                                 controller.error(error);
                             }
-                        }
+                        },
                     });
 
                     return {
                         ok: true,
-                        body: stream
+                        body: stream,
                     };
-                    
                 } catch (error) {
                     console.error('[Ollama Provider] Request error:', error);
                     throw error;
                 }
             });
-        }
+        },
     };
 }
 
@@ -338,5 +325,5 @@ module.exports = {
     OllamaProvider,
     createLLM,
     createStreamingLLM,
-    convertMessagesToOllamaFormat
-}; 
+    convertMessagesToOllamaFormat,
+};

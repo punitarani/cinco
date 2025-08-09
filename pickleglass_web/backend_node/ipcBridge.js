@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+const crypto = require('node:crypto');
 
 function ipcRequest(req, channel, payload) {
     return new Promise((resolve, reject) => {
@@ -9,13 +9,13 @@ function ipcRequest(req, channel, payload) {
         }
 
         const responseChannel = `${channel}-${crypto.randomUUID()}`;
-        
-        req.bridge.once(responseChannel, (response) => {
+
+        req.bridge.once(responseChannel, response => {
             if (!response) {
                 reject(new Error(`No response received from ${channel}`));
                 return;
             }
-            
+
             if (response.success) {
                 resolve(response.data);
             } else {
@@ -32,4 +32,4 @@ function ipcRequest(req, channel, payload) {
     });
 }
 
-module.exports = { ipcRequest }; 
+module.exports = { ipcRequest };

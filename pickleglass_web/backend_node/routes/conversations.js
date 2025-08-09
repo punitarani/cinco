@@ -51,4 +51,4 @@ router.get('/search', (req, res) => {
     res.status(501).json({ error: 'Search not implemented for IPC bridge yet.' });
 });
 
-module.exports = router; 
+module.exports = router;

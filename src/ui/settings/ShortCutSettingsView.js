@@ -1,8 +1,38 @@
 import { html, css, LitElement } from '../../ui/assets/lit-core-2.7.4.min.js';
 
 const commonSystemShortcuts = new Set([
-    'Cmd+Q', 'Cmd+W', 'Cmd+A', 'Cmd+S', 'Cmd+Z', 'Cmd+X', 'Cmd+C', 'Cmd+V', 'Cmd+P', 'Cmd+F', 'Cmd+G', 'Cmd+H', 'Cmd+M', 'Cmd+N', 'Cmd+O', 'Cmd+T',
-    'Ctrl+Q', 'Ctrl+W', 'Ctrl+A', 'Ctrl+S', 'Ctrl+Z', 'Ctrl+X', 'Ctrl+C', 'Ctrl+V', 'Ctrl+P', 'Ctrl+F', 'Ctrl+G', 'Ctrl+H', 'Ctrl+M', 'Ctrl+N', 'Ctrl+O', 'Ctrl+T'
+    'Cmd+Q',
+    'Cmd+W',
+    'Cmd+A',
+    'Cmd+S',
+    'Cmd+Z',
+    'Cmd+X',
+    'Cmd+C',
+    'Cmd+V',
+    'Cmd+P',
+    'Cmd+F',
+    'Cmd+G',
+    'Cmd+H',
+    'Cmd+M',
+    'Cmd+N',
+    'Cmd+O',
+    'Cmd+T',
+    'Ctrl+Q',
+    'Ctrl+W',
+    'Ctrl+A',
+    'Ctrl+S',
+    'Ctrl+Z',
+    'Ctrl+X',
+    'Ctrl+C',
+    'Ctrl+V',
+    'Ctrl+P',
+    'Ctrl+F',
+    'Ctrl+G',
+    'Ctrl+H',
+    'Ctrl+M',
+    'Ctrl+N',
+    'Ctrl+O',
+    'Ctrl+T',
 ]);
 
 const displayNameMap = {
@@ -11,7 +41,7 @@ const displayNameMap = {
     moveDown: 'Move Down Window',
     scrollUp: 'Scroll Up Response',
     scrollDown: 'Scroll Down Response',
-  };
+};
 
 export class ShortcutSettingsView extends LitElement {
     static styles = css`
@@ -93,7 +123,7 @@ export class ShortcutSettingsView extends LitElement {
         shortcuts: { type: Object, state: true },
         isLoading: { type: Boolean, state: true },
         capturingKey: { type: String, state: true },
-        feedback:   { type:Object, state:true }
+        feedback: { type: Object, state: true },
     };
 
     constructor() {
@@ -121,49 +151,54 @@ export class ShortcutSettingsView extends LitElement {
         }
     }
 
-    handleKeydown(e, shortcutKey){
-        e.preventDefault(); e.stopPropagation();
+    handleKeydown(e, shortcutKey) {
+        e.preventDefault();
+        e.stopPropagation();
         const result = this._parseAccelerator(e);
-        if(!result) return;          // modifier키만 누른 상태
-    
-        const {accel, error} = result;
-        if(error){
-          this.feedback = {...this.feedback, [shortcutKey]:{type:'error',msg:error}};
-          return;
+        if (!result) return; // modifier키만 누른 상태
+
+        const { accel, error } = result;
+        if (error) {
+            this.feedback = { ...this.feedback, [shortcutKey]: { type: 'error', msg: error } };
+            return;
         }
         // 성공
-        this.shortcuts = {...this.shortcuts, [shortcutKey]:accel};
-        this.feedback = {...this.feedback, [shortcutKey]:{type:'success',msg:'Shortcut set'}};
+        this.shortcuts = { ...this.shortcuts, [shortcutKey]: accel };
+        this.feedback = { ...this.feedback, [shortcutKey]: { type: 'success', msg: 'Shortcut set' } };
         this.stopCapture();
-      }
-    
-      _parseAccelerator(e){
+    }
+
+    _parseAccelerator(e) {
         /* returns {accel?, error?} */
-        const parts=[]; if(e.metaKey) parts.push('Cmd');
-        if(e.ctrlKey) parts.push('Ctrl');
-        if(e.altKey) parts.push('Alt');
-        if(e.shiftKey) parts.push('Shift');
-    
-        const isModifier=['Meta','Control','Alt','Shift'].includes(e.key);
-        if(isModifier) return null;
-    
-        const map={ArrowUp:'Up',ArrowDown:'Down',ArrowLeft:'Left',ArrowRight:'Right',' ':'Space'};
-        parts.push(e.key.length===1? e.key.toUpperCase() : (map[e.key]||e.key));
-        const accel=parts.join('+');
-    
+        const parts = [];
+        if (e.metaKey) parts.push('Cmd');
+        if (e.ctrlKey) parts.push('Ctrl');
+        if (e.altKey) parts.push('Alt');
+        if (e.shiftKey) parts.push('Shift');
+
+        const isModifier = ['Meta', 'Control', 'Alt', 'Shift'].includes(e.key);
+        if (isModifier) return null;
+
+        const map = { ArrowUp: 'Up', ArrowDown: 'Down', ArrowLeft: 'Left', ArrowRight: 'Right', ' ': 'Space' };
+        parts.push(e.key.length === 1 ? e.key.toUpperCase() : map[e.key] || e.key);
+        const accel = parts.join('+');
+
         /* ---- validation ---- */
-        if(parts.length===1)   return {error:'Invalid shortcut: needs a modifier'};
-        if(parts.length>4)     return {error:'Invalid shortcut: max 4 keys'};
-        if(commonSystemShortcuts.has(accel)) return {error:'Invalid shortcut: system reserved'};
-        return {accel};
-      }
+        if (parts.length === 1) return { error: 'Invalid shortcut: needs a modifier' };
+        if (parts.length > 4) return { error: 'Invalid shortcut: max 4 keys' };
+        if (commonSystemShortcuts.has(accel)) return { error: 'Invalid shortcut: system reserved' };
+        return { accel };
+    }
 
-    startCapture(key){ this.capturingKey = key; this.feedback = {...this.feedback, [key]:undefined}; }
+    startCapture(key) {
+        this.capturingKey = key;
+        this.feedback = { ...this.feedback, [key]: undefined };
+    }
 
-    disableShortcut(key){
-        this.shortcuts = {...this.shortcuts, [key]:''};         // 공백 => 작동 X
-        this.feedback   = {...this.feedback, [key]:{type:'success',msg:'Shortcut disabled'}};
-      }
+    disableShortcut(key) {
+        this.shortcuts = { ...this.shortcuts, [key]: '' }; // 공백 => 작동 X
+        this.feedback = { ...this.feedback, [key]: { type: 'success', msg: 'Shortcut disabled' } };
+    }
 
     stopCapture() {
         this.capturingKey = null;
@@ -186,9 +221,9 @@ export class ShortcutSettingsView extends LitElement {
 
     async handleResetToDefault() {
         if (!window.api) return;
-        const confirmation = confirm("Are you sure you want to reset all shortcuts to their default values?");
+        const confirmation = confirm('Are you sure you want to reset all shortcuts to their default values?');
         if (!confirmation) return;
-    
+
         try {
             const defaultShortcuts = await window.api.shortcutSettingsView.getDefaultShortcuts();
             this.shortcuts = defaultShortcuts;
@@ -201,13 +236,13 @@ export class ShortcutSettingsView extends LitElement {
         if (displayNameMap[name]) {
             return displayNameMap[name];
         }
-        const result = name.replace(/([A-Z])/g, " $1");
+        const result = name.replace(/([A-Z])/g, ' $1');
         return result.charAt(0).toUpperCase() + result.slice(1);
     }
 
-    render(){
-        if(this.isLoading){
-          return html`<div class="container"><div class="loading-state">Loading Shortcuts...</div></div>`;
+    render() {
+        if (this.isLoading) {
+            return html`<div class="container"><div class="loading-state">Loading Shortcuts...</div></div>`;
         }
         return html`
           <div class="container">
@@ -215,32 +250,37 @@ export class ShortcutSettingsView extends LitElement {
             <h1 class="title">Edit Shortcuts</h1>
     
             <div class="scroll-area">
-              ${Object.keys(this.shortcuts).map(key=>html`
+              ${Object.keys(this.shortcuts).map(
+                  key => html`
                 <div>
                   <div class="shortcut-entry">
                     <span class="shortcut-name">${this.formatShortcutName(key)}</span>
     
                     <!-- Edit & Disable 버튼 -->
-                    <button class="action-btn" @click=${()=>this.startCapture(key)}>Edit</button>
-                    <button class="action-btn" @click=${()=>this.disableShortcut(key)}>Disable</button>
+                    <button class="action-btn" @click=${() => this.startCapture(key)}>Edit</button>
+                    <button class="action-btn" @click=${() => this.disableShortcut(key)}>Disable</button>
     
                     <input readonly
-                      class="shortcut-input ${this.capturingKey===key?'capturing':''}"
-                      .value=${this.shortcuts[key]||''}
-                      placeholder=${this.capturingKey===key?'Press new shortcut…':'Click to edit'}
-                      @click=${()=>this.startCapture(key)}
-                      @keydown=${e=>this.handleKeydown(e,key)}
-                      @blur=${()=>this.stopCapture()}
+                      class="shortcut-input ${this.capturingKey === key ? 'capturing' : ''}"
+                      .value=${this.shortcuts[key] || ''}
+                      placeholder=${this.capturingKey === key ? 'Press new shortcut…' : 'Click to edit'}
+                      @click=${() => this.startCapture(key)}
+                      @keydown=${e => this.handleKeydown(e, key)}
+                      @blur=${() => this.stopCapture()}
                     />
                   </div>
     
-                  ${this.feedback[key] ? html`
+                  ${
+                      this.feedback[key]
+                          ? html`
                     <div class="feedback ${this.feedback[key].type}">
                       ${this.feedback[key].msg}
-                    </div>` : html`<div class="feedback"></div>`
+                    </div>`
+                          : html`<div class="feedback"></div>`
                   }
                 </div>
-              `)}
+              `
+              )}
             </div>
     
             <div class="actions">
@@ -250,7 +290,7 @@ export class ShortcutSettingsView extends LitElement {
             </div>
           </div>
         `;
-      }
     }
+}
 
 customElements.define('shortcut-settings-view', ShortcutSettingsView);

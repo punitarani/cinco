@@ -16,5 +16,5 @@ module.exports = {
     initializeDefaultModels: (...args) => getRepository().initializeDefaultModels(...args),
     deleteModel: (...args) => getRepository().deleteModel(...args),
     getInstalledModels: (...args) => getRepository().getInstalledModels(...args),
-    getInstallingModels: (...args) => getRepository().getInstallingModels(...args)
-}; 
+    getInstallingModels: (...args) => getRepository().getInstallingModels(...args),
+};

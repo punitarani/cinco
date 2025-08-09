@@ -11,8 +11,8 @@ const localAIManager = require('../common/services/localAIManager');
 const store = new Store({
     name: 'pickle-glass-settings',
     defaults: {
-        users: {}
-    }
+        users: {},
+    },
 });
 
 // Configuration constants
@@ -31,9 +31,9 @@ async function getModelSettings() {
             modelStateService.getAllApiKeys(),
             modelStateService.getSelectedModels(),
             modelStateService.getAvailableModels('llm'),
-            modelStateService.getAvailableModels('stt')
+            modelStateService.getAvailableModels('stt'),
         ]);
-        
+
         return { success: true, data: { config, storedKeys, availableLlm, availableStt, selectedModels } };
     } catch (error) {
         console.error('[SettingsService] Error getting model settings:', error);
@@ -68,7 +68,6 @@ async function shutdownOllama() {
     return localAIManager.stopService('ollama');
 }
 
-
 // window targeting system
 class WindowNotificationManager {
     constructor() {
@@ -82,15 +81,16 @@ class WindowNotificationManager {
      * @param {object} options - Notification options
      */
     notifyRelevantWindows(event, data = null, options = {}) {
-        const { 
-            windowTypes = NOTIFICATION_CONFIG.RELEVANT_WINDOW_TYPES,
-            debounce = NOTIFICATION_CONFIG.DEBOUNCE_DELAY 
-        } = options;
+        const { windowTypes = NOTIFICATION_CONFIG.RELEVANT_WINDOW_TYPES, debounce = NOTIFICATION_CONFIG.DEBOUNCE_DELAY } = options;
 
         if (debounce > 0) {
-            this.debounceNotification(event, () => {
-                this.sendToTargetWindows(event, data, windowTypes);
-            }, debounce);
+            this.debounceNotification(
+                event,
+                () => {
+                    this.sendToTargetWindows(event, data, windowTypes);
+                },
+                debounce
+            );
         } else {
             this.sendToTargetWindows(event, data, windowTypes);
         }
@@ -98,14 +98,14 @@ class WindowNotificationManager {
 
     sendToTargetWindows(event, data, windowTypes) {
         const relevantWindows = this.getRelevantWindows(windowTypes);
-        
+
         if (relevantWindows.length === 0) {
             console.log(`[WindowNotificationManager] No relevant windows found for event: ${event}`);
             return;
         }
 
         console.log(`[WindowNotificationManager] Sending ${event} to ${relevantWindows.length} relevant windows`);
-        
+
         relevantWindows.forEach(win => {
             try {
                 if (data) {
@@ -193,7 +193,7 @@ const DEFAULT_KEYBINDS = {
         nextResponse: 'Ctrl+]',
         scrollUp: 'Ctrl+Shift+Up',
         scrollDown: 'Ctrl+Shift+Down',
-    }
+    },
 };
 
 // Service state
@@ -214,7 +214,7 @@ function getDefaultSettings() {
         googleSearchEnabled: false,
         backgroundTransparency: 0.5,
         fontSize: 14,
-        contentProtection: true
+        contentProtection: true,
     };
 }
 
@@ -222,10 +222,10 @@ async function getSettings() {
     try {
         const uid = authService.getCurrentUserId();
         const userSettingsKey = uid ? `users.${uid}` : 'users.default';
-        
+
         const defaultSettings = getDefaultSettings();
         const savedSettings = store.get(userSettingsKey, {});
-        
+
         currentSettings = { ...defaultSettings, ...savedSettings };
         return currentSettings;
     } catch (error) {
@@ -238,13 +238,13 @@ async function saveSettings(settings) {
     try {
         const uid = authService.getCurrentUserId();
         const userSettingsKey = uid ? `users.${uid}` : 'users.default';
-        
+
         const currentSaved = store.get(userSettingsKey, {});
         const newSettings = { ...currentSaved, ...settings };
-        
+
         store.set(userSettingsKey, newSettings);
         currentSettings = newSettings;
-        
+
         // Use smart notification system
         windowNotificationManager.notifyRelevantWindows('settings-updated', currentSettings);
 
@@ -280,13 +280,13 @@ async function createPreset(title, prompt) {
     try {
         // The adapter injects the UID.
         const result = await settingsRepository.createPreset({ title, prompt });
-        
+
         windowNotificationManager.notifyRelevantWindows('presets-updated', {
             action: 'created',
             presetId: result.id,
-            title
+            title,
         });
-        
+
         return { success: true, id: result.id };
     } catch (error) {
         console.error('[SettingsService] Error creating preset:', error);
@@ -298,13 +298,13 @@ async function updatePreset(id, title, prompt) {
     try {
         // The adapter injects the UID.
         await settingsRepository.updatePreset(id, { title, prompt });
-        
+
         windowNotificationManager.notifyRelevantWindows('presets-updated', {
             action: 'updated',
             presetId: id,
-            title
+            title,
         });
-        
+
         return { success: true };
     } catch (error) {
         console.error('[SettingsService] Error updating preset:', error);
@@ -316,12 +316,12 @@ async function deletePreset(id) {
     try {
         // The adapter injects the UID.
         await settingsRepository.deletePreset(id);
-        
+
         windowNotificationManager.notifyRelevantWindows('presets-updated', {
             action: 'deleted',
-            presetId: id
+            presetId: id,
         });
-        
+
         return { success: true };
     } catch (error) {
         console.error('[SettingsService] Error deleting preset:', error);
@@ -336,16 +336,16 @@ async function saveApiKey(apiKey, provider = 'openai') {
         if (!modelStateService) {
             throw new Error('ModelStateService not initialized');
         }
-        
+
         await modelStateService.setApiKey(provider, apiKey);
-        
+
         // Notify windows
         BrowserWindow.getAllWindows().forEach(win => {
             if (!win.isDestroyed()) {
                 win.webContents.send('api-key-validated', apiKey);
             }
         });
-        
+
         return { success: true };
     } catch (error) {
         console.error('[SettingsService] Error saving API key:', error);
@@ -360,20 +360,20 @@ async function removeApiKey() {
         if (!modelStateService) {
             throw new Error('ModelStateService not initialized');
         }
-        
+
         // Remove all API keys for all providers
         const providers = ['openai', 'anthropic', 'gemini', 'ollama', 'whisper'];
         for (const provider of providers) {
             await modelStateService.removeApiKey(provider);
         }
-        
+
         // Notify windows
         BrowserWindow.getAllWindows().forEach(win => {
             if (!win.isDestroyed()) {
                 win.webContents.send('api-key-removed');
             }
         });
-        
+
         console.log('[SettingsService] API key removed for all providers');
         return { success: true };
     } catch (error) {
@@ -386,14 +386,14 @@ async function updateContentProtection(enabled) {
     try {
         const settings = await getSettings();
         settings.contentProtection = enabled;
-        
+
         // Update content protection in main window
         const { app } = require('electron');
         const mainWindow = windowPool.get('main');
         if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.setContentProtection(enabled);
         }
-        
+
         return await saveSettings(settings);
     } catch (error) {
         console.error('[SettingsService] Error updating content protection:', error);
@@ -421,9 +421,9 @@ async function setAutoUpdateSetting(isEnabled) {
 }
 
 function initialize() {
-    // cleanup 
+    // cleanup
     windowNotificationManager.cleanup();
-    
+
     console.log('[SettingsService] Initialized and ready.');
 }
 
@@ -436,7 +436,7 @@ function cleanup() {
 function notifyPresetUpdate(action, presetId, title = null) {
     const data = { action, presetId };
     if (title) data.title = title;
-    
+
     windowNotificationManager.notifyRelevantWindows('presets-updated', data);
 }
 
@@ -463,5 +463,5 @@ module.exports = {
     // Ollama facade
     getOllamaStatus,
     ensureOllamaReady,
-    shutdownOllama
+    shutdownOllama,
 };

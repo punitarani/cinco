@@ -1,5 +1,5 @@
 // src/bridge/internalBridge.js
-const { EventEmitter } = require('events');
+const { EventEmitter } = require('node:events');
 
 // FeatureCore와 WindowCore를 잇는 내부 이벤트 버스
 const internalBridge = new EventEmitter();

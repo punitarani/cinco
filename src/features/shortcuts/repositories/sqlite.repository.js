@@ -1,5 +1,5 @@
 const sqliteClient = require('../../common/services/sqliteClient');
-const crypto = require('crypto');
+const crypto = require('node:crypto');
 
 function getAllKeybinds() {
     const db = sqliteClient.getDb();
@@ -16,7 +16,7 @@ function upsertKeybinds(keybinds) {
     if (!keybinds || keybinds.length === 0) return;
 
     const db = sqliteClient.getDb();
-    const upsert = db.transaction((items) => {
+    const upsert = db.transaction(items => {
         const query = `
             INSERT INTO shortcuts (action, accelerator, created_at)
             VALUES (@action, @accelerator, @created_at)
@@ -29,7 +29,7 @@ function upsertKeybinds(keybinds) {
             insert.run({
                 action: item.action,
                 accelerator: item.accelerator,
-                created_at: Math.floor(Date.now() / 1000)
+                created_at: Math.floor(Date.now() / 1000),
             });
         }
     });
@@ -44,5 +44,5 @@ function upsertKeybinds(keybinds) {
 
 module.exports = {
     getAllKeybinds,
-    upsertKeybinds
-}; 
+    upsertKeybinds,
+};

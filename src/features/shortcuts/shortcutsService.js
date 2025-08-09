@@ -3,7 +3,6 @@ const shortcutsRepository = require('./repositories');
 const internalBridge = require('../../bridge/internalBridge');
 const askService = require('../ask/askService');
 
-
 class ShortcutsService {
     constructor() {
         this.lastVisibleWindows = new Set(['header']);
@@ -21,7 +20,7 @@ class ShortcutsService {
         console.log('[ShortcutsService] Initialized with dependencies and event listener.');
     }
 
-    async openShortcutSettingsWindow () {
+    async openShortcutSettingsWindow() {
         const keybinds = await this.loadKeybinds();
         const shortcutWin = this.windowPool.get('shortcut-settings');
         shortcutWin.webContents.send('shortcut:loadShortcuts', keybinds);
@@ -32,7 +31,7 @@ class ShortcutsService {
         return { success: true };
     }
 
-    async closeShortcutSettingsWindow () {
+    async closeShortcutSettingsWindow() {
         await this.registerShortcuts();
         internalBridge.emit('window:requestVisibility', { name: 'shortcut-settings', visible: false });
         console.log('[ShortcutsService] Shortcut settings window closed.');
@@ -45,7 +44,7 @@ class ShortcutsService {
             await this.closeShortcutSettingsWindow();
             return { success: true };
         } catch (error) {
-            console.error("Failed to save shortcuts:", error);
+            console.error('Failed to save shortcuts:', error);
             await this.closeShortcutSettingsWindow();
             return { success: false, error: error.message };
         }
@@ -80,7 +79,7 @@ class ShortcutsService {
         if (!keybindsArray || keybindsArray.length === 0) {
             console.log(`[Shortcuts] No keybinds found. Loading defaults.`);
             const defaults = this.getDefaultKeybinds();
-            await this.saveKeybinds(defaults); 
+            await this.saveKeybinds(defaults);
             return defaults;
         }
 
@@ -123,7 +122,7 @@ class ShortcutsService {
     async toggleAllWindowsVisibility() {
         const targetVisibility = !this.allWindowVisibility;
         internalBridge.emit('window:requestToggleAllWindowsVisibility', {
-            targetVisibility: targetVisibility
+            targetVisibility: targetVisibility,
         });
 
         if (this.allWindowVisibility) {
@@ -142,7 +141,7 @@ class ShortcutsService {
         }
         const keybinds = await this.loadKeybinds();
         globalShortcut.unregisterAll();
-        
+
         const header = this.windowPool.get('header');
         const mainWindow = header;
 
@@ -157,7 +156,7 @@ class ShortcutsService {
                 }
             });
         };
-        
+
         sendToRenderer('shortcuts-updated', keybinds);
 
         if (registerOnlyToggleVisibility) {
@@ -171,7 +170,7 @@ class ShortcutsService {
         // --- Hardcoded shortcuts ---
         const isMac = process.platform === 'darwin';
         const modifier = isMac ? 'Cmd' : 'Ctrl';
-        
+
         // Monitor switching
         const displays = screen.getAllDisplays();
         if (displays.length > 1) {
@@ -206,7 +205,7 @@ class ShortcutsService {
             if (!accelerator) continue;
 
             let callback;
-            switch(action) {
+            switch (action) {
                 case 'toggleVisibility':
                     callback = () => this.toggleAllWindowsVisibility();
                     break;
@@ -230,30 +229,38 @@ class ShortcutsService {
                     };
                     break;
                 case 'moveUp':
-                    callback = () => { if (header && header.isVisible()) internalBridge.emit('window:moveStep', { direction: 'up' }); };
+                    callback = () => {
+                        if (header && header.isVisible()) internalBridge.emit('window:moveStep', { direction: 'up' });
+                    };
                     break;
                 case 'moveDown':
-                    callback = () => { if (header && header.isVisible()) internalBridge.emit('window:moveStep', { direction: 'down' }); };
+                    callback = () => {
+                        if (header && header.isVisible()) internalBridge.emit('window:moveStep', { direction: 'down' });
+                    };
                     break;
                 case 'moveLeft':
-                    callback = () => { if (header && header.isVisible()) internalBridge.emit('window:moveStep', { direction: 'left' }); };
+                    callback = () => {
+                        if (header && header.isVisible()) internalBridge.emit('window:moveStep', { direction: 'left' });
+                    };
                     break;
                 case 'moveRight':
-                    callback = () => { if (header && header.isVisible()) internalBridge.emit('window:moveStep', { direction: 'right' }); };
+                    callback = () => {
+                        if (header && header.isVisible()) internalBridge.emit('window:moveStep', { direction: 'right' });
+                    };
                     break;
                 case 'toggleClickThrough':
-                     callback = () => {
+                    callback = () => {
                         this.mouseEventsIgnored = !this.mouseEventsIgnored;
-                        if(mainWindow && !mainWindow.isDestroyed()){
+                        if (mainWindow && !mainWindow.isDestroyed()) {
                             mainWindow.setIgnoreMouseEvents(this.mouseEventsIgnored, { forward: true });
                             mainWindow.webContents.send('click-through-toggled', this.mouseEventsIgnored);
                         }
-                     };
-                     break;
+                    };
+                    break;
                 case 'manualScreenshot':
                     callback = () => {
-                        if(mainWindow && !mainWindow.isDestroyed()) {
-                             mainWindow.webContents.executeJavaScript('window.captureManualScreenshot && window.captureManualScreenshot();');
+                        if (mainWindow && !mainWindow.isDestroyed()) {
+                            mainWindow.webContents.executeJavaScript('window.captureManualScreenshot && window.captureManualScreenshot();');
                         }
                     };
                     break;
@@ -264,11 +271,11 @@ class ShortcutsService {
                     callback = () => sendToRenderer('navigate-next-response');
                     break;
             }
-            
+
             if (callback) {
                 try {
                     globalShortcut.register(accelerator, callback);
-                } catch(e) {
+                } catch (e) {
                     console.error(`[Shortcuts] Failed to register shortcut for "${action}" (${accelerator}):`, e.message);
                 }
             }
@@ -281,7 +288,6 @@ class ShortcutsService {
         console.log('[Shortcuts] All shortcuts have been unregistered.');
     }
 }
-
 
 const shortcutsService = new ShortcutsService();
 

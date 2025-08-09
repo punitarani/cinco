@@ -285,11 +285,13 @@ export class PermissionHeader extends LitElement {
         if (changedProperties.has('userMode')) {
             const newHeight = this.userMode === 'firebase' ? 280 : 220;
             console.log(`[PermissionHeader] User mode changed to ${this.userMode}, requesting resize to ${newHeight}px`);
-            this.dispatchEvent(new CustomEvent('request-resize', {
-                detail: { height: newHeight },
-                bubbles: true,
-                composed: true
-            }));
+            this.dispatchEvent(
+                new CustomEvent('request-resize', {
+                    detail: { height: newHeight },
+                    bubbles: true,
+                    composed: true,
+                })
+            );
         }
     }
 
@@ -307,7 +309,7 @@ export class PermissionHeader extends LitElement {
         }
 
         await this.checkPermissions();
-        
+
         // Set up periodic permission check
         this.permissionCheckInterval = setInterval(async () => {
             if (window.api) {
@@ -331,21 +333,21 @@ export class PermissionHeader extends LitElement {
 
     async checkPermissions() {
         if (!window.api || this.isChecking) return;
-        
+
         this.isChecking = true;
-        
+
         try {
             const permissions = await window.api.permissionHeader.checkSystemPermissions();
             console.log('[PermissionHeader] Permission check result:', permissions);
-            
+
             const prevMic = this.microphoneGranted;
             const prevScreen = this.screenGranted;
             const prevKeychain = this.keychainGranted;
-            
+
             this.microphoneGranted = permissions.microphone;
             this.screenGranted = permissions.screen;
             this.keychainGranted = permissions.keychain;
-            
+
             // if permissions changed == UI update
             if (prevMic !== this.microphoneGranted || prevScreen !== this.screenGranted || prevKeychain !== this.keychainGranted) {
                 console.log('[PermissionHeader] Permission status changed, updating UI');
@@ -354,12 +356,9 @@ export class PermissionHeader extends LitElement {
 
             const isKeychainRequired = this.userMode === 'firebase';
             const keychainOk = !isKeychainRequired || this.keychainGranted === 'granted';
-            
+
             // if all permissions granted == automatically continue
-            if (this.microphoneGranted === 'granted' && 
-                this.screenGranted === 'granted' && 
-                keychainOk && 
-                this.continueCallback) {
+            if (this.microphoneGranted === 'granted' && this.screenGranted === 'granted' && keychainOk && this.continueCallback) {
                 console.log('[PermissionHeader] All permissions granted, proceeding automatically');
                 setTimeout(() => this.handleContinue(), 500);
             }
@@ -372,29 +371,33 @@ export class PermissionHeader extends LitElement {
 
     async handleMicrophoneClick() {
         if (!window.api || this.microphoneGranted === 'granted') return;
-        
+
         console.log('[PermissionHeader] Requesting microphone permission...');
-        
+
         try {
             const result = await window.api.permissionHeader.checkSystemPermissions();
             console.log('[PermissionHeader] Microphone permission result:', result);
-            
+
             if (result.microphone === 'granted') {
                 this.microphoneGranted = 'granted';
                 this.requestUpdate();
                 return;
-              }
-            
-              if (result.microphone === 'not-determined' || result.microphone === 'denied' || result.microphone === 'unknown' || result.microphone === 'restricted') {
+            }
+
+            if (
+                result.microphone === 'not-determined' ||
+                result.microphone === 'denied' ||
+                result.microphone === 'unknown' ||
+                result.microphone === 'restricted'
+            ) {
                 const res = await window.api.permissionHeader.requestMicrophonePermission();
                 if (res.status === 'granted' || res.success === true) {
                     this.microphoneGranted = 'granted';
                     this.requestUpdate();
                     return;
                 }
-              }
-            
-            
+            }
+
             // Check permissions again after a delay
             // setTimeout(() => this.checkPermissions(), 1000);
         } catch (error) {
@@ -404,23 +407,28 @@ export class PermissionHeader extends LitElement {
 
     async handleScreenClick() {
         if (!window.api || this.screenGranted === 'granted') return;
-        
+
         console.log('[PermissionHeader] Checking screen recording permission...');
-        
+
         try {
             const permissions = await window.api.permissionHeader.checkSystemPermissions();
             console.log('[PermissionHeader] Screen permission check result:', permissions);
-            
+
             if (permissions.screen === 'granted') {
                 this.screenGranted = 'granted';
                 this.requestUpdate();
                 return;
             }
-            if (permissions.screen === 'not-determined' || permissions.screen === 'denied' || permissions.screen === 'unknown' || permissions.screen === 'restricted') {
-            console.log('[PermissionHeader] Opening screen recording preferences...');
-            await window.api.permissionHeader.openSystemPreferences('screen-recording');
+            if (
+                permissions.screen === 'not-determined' ||
+                permissions.screen === 'denied' ||
+                permissions.screen === 'unknown' ||
+                permissions.screen === 'restricted'
+            ) {
+                console.log('[PermissionHeader] Opening screen recording preferences...');
+                await window.api.permissionHeader.openSystemPreferences('screen-recording');
             }
-            
+
             // Check permissions again after a delay
             // (This may not execute if app restarts after permission grant)
             // setTimeout(() => this.checkPermissions(), 2000);
@@ -431,14 +439,14 @@ export class PermissionHeader extends LitElement {
 
     async handleKeychainClick() {
         if (!window.api || this.keychainGranted === 'granted') return;
-        
+
         console.log('[PermissionHeader] Requesting keychain permission...');
-        
+
         try {
             // Trigger initializeKey to prompt for keychain access
             // Assuming encryptionService is accessible or via API
             await window.api.permissionHeader.initializeEncryptionKey(); // New IPC handler needed
-            
+
             // After success, update status
             this.keychainGranted = 'granted';
             this.requestUpdate();
@@ -451,10 +459,7 @@ export class PermissionHeader extends LitElement {
         const isKeychainRequired = this.userMode === 'firebase';
         const keychainOk = !isKeychainRequired || this.keychainGranted === 'granted';
 
-        if (this.continueCallback && 
-            this.microphoneGranted === 'granted' && 
-            this.screenGranted === 'granted' && 
-            keychainOk) {
+        if (this.continueCallback && this.microphoneGranted === 'granted' && this.screenGranted === 'granted' && keychainOk) {
             // Mark permissions as completed
             if (window.api && isKeychainRequired) {
                 try {
@@ -464,7 +469,7 @@ export class PermissionHeader extends LitElement {
                     console.error('[PermissionHeader] Error marking keychain as completed:', error);
                 }
             }
-            
+
             this.continueCallback();
         }
     }
@@ -492,53 +497,71 @@ export class PermissionHeader extends LitElement {
                 <h1 class="title">Permission Setup Required</h1>
 
                 <div class="form-content ${allGranted ? 'all-granted' : ''}">
-                    ${!allGranted ? html`
+                    ${
+                        !allGranted
+                            ? html`
                         <div class="subtitle">Grant access to microphone, screen recording${isKeychainRequired ? ' and keychain' : ''} to continue</div>
                         
                         <div class="permission-status">
                             <div class="permission-item ${this.microphoneGranted === 'granted' ? 'granted' : ''}">
-                                ${this.microphoneGranted === 'granted' ? html`
+                                ${
+                                    this.microphoneGranted === 'granted'
+                                        ? html`
                                     <svg class="check-icon" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                                     </svg>
                                     <span>Microphone ✓</span>
-                                ` : html`
+                                `
+                                        : html`
                                     <svg class="permission-icon" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd" />
                                     </svg>
                                     <span>Microphone</span>
-                                `}
+                                `
+                                }
                             </div>
                             
                             <div class="permission-item ${this.screenGranted === 'granted' ? 'granted' : ''}">
-                                ${this.screenGranted === 'granted' ? html`
+                                ${
+                                    this.screenGranted === 'granted'
+                                        ? html`
                                     <svg class="check-icon" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                                     </svg>
                                     <span>Screen ✓</span>
-                                ` : html`
+                                `
+                                        : html`
                                     <svg class="permission-icon" viewBox="0 0 20 20" fill="currentColor">
                                         <path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l.123.489.804.804A1 1 0 0113 18H7a1 1 0 01-.707-1.707l.804-.804L7.22 15H5a2 2 0 01-2-2V5zm5.771 7H5V5h10v7H8.771z" clip-rule="evenodd" />
                                     </svg>
                                     <span>Screen Recording</span>
-                                `}
+                                `
+                                }
                             </div>
 
-                            ${isKeychainRequired ? html`
+                            ${
+                                isKeychainRequired
+                                    ? html`
                                 <div class="permission-item ${this.keychainGranted === 'granted' ? 'granted' : ''}">
-                                    ${this.keychainGranted === 'granted' ? html`
+                                    ${
+                                        this.keychainGranted === 'granted'
+                                            ? html`
                                         <svg class="check-icon" viewBox="0 0 20 20" fill="currentColor">
                                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                                         </svg>
                                         <span>Data Encryption ✓</span>
-                                    ` : html`
+                                    `
+                                            : html`
                                         <svg class="permission-icon" viewBox="0 0 20 20" fill="currentColor">
                                             <path fill-rule="evenodd" d="M18 8a6 6 0 01-7.744 5.668l-1.649 1.652c-.63.63-1.706.19-1.706-.742V12.18a.75.75 0 00-1.5 0v2.696c0 .932-1.075 1.372-1.706.742l-1.649-1.652A6 6 0 112 8zm-4 0a.75.75 0 00.75-.75A3.75 3.75 0 018.25 4a.75.75 0 000 1.5 2.25 2.25 0 012.25 2.25.75.75 0 00.75.75z" clip-rule="evenodd" />
                                         </svg>
                                         <span>Data Encryption</span>
-                                    `}
+                                    `
+                                    }
                                 </div>
-                            ` : ''}
+                            `
+                                    : ''
+                            }
                         </div>
 
                         <button 
@@ -557,7 +580,9 @@ export class PermissionHeader extends LitElement {
                             ${this.screenGranted === 'granted' ? 'Screen Recording Granted' : 'Grant Screen Recording Access'}
                         </button>
 
-                        ${isKeychainRequired ? html`
+                        ${
+                            isKeychainRequired
+                                ? html`
                             <button 
                                 class="action-button" 
                                 @click=${this.handleKeychainClick}
@@ -568,19 +593,23 @@ export class PermissionHeader extends LitElement {
                             <div class="subtitle" style="visibility: ${this.keychainGranted === 'granted' ? 'hidden' : 'visible'}">
                                 Stores the key to encrypt your data. Press "<b>Always Allow</b>" to continue.
                             </div>
-                        ` : ''}
-                    ` : html`
+                        `
+                                : ''
+                        }
+                    `
+                            : html`
                         <button 
                             class="continue-button" 
                             @click=${this.handleContinue}
                         >
                             Continue to Pickle Glass
                         </button>
-                    `}
+                    `
+                    }
                 </div>
             </div>
         `;
     }
 }
 
-customElements.define('permission-setup', PermissionHeader); 
+customElements.define('permission-setup', PermissionHeader);

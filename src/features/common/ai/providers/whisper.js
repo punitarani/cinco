@@ -2,7 +2,7 @@ let spawn, path, EventEmitter;
 
 if (typeof window === 'undefined') {
     spawn = require('child_process').spawn;
-    path = require('path');
+    path = require('node:path');
     EventEmitter = require('events').EventEmitter;
 } else {
     class DummyEventEmitter {
@@ -57,12 +57,12 @@ class WhisperSTTSession extends EventEmitter {
 
         try {
             const tempFile = await this.whisperService.saveAudioToTemp(audioData, this.sessionId);
-            
+
             if (!tempFile || typeof tempFile !== 'string') {
                 console.error('[WhisperSTT] Invalid temp file path:', tempFile);
                 return;
             }
-            
+
             const whisperPath = await this.whisperService.getWhisperPath();
             const modelPath = await this.whisperService.getModelPath(this.model);
 
@@ -72,30 +72,35 @@ class WhisperSTTSession extends EventEmitter {
             }
 
             this.process = spawn(whisperPath, [
-                '-m', modelPath,
-                '-f', tempFile,
+                '-m',
+                modelPath,
+                '-f',
+                tempFile,
                 '--no-timestamps',
                 '--output-txt',
                 '--output-json',
-                '--language', 'auto',
-                '--threads', '4',
-                '--print-progress', 'false'
+                '--language',
+                'auto',
+                '--threads',
+                '4',
+                '--print-progress',
+                'false',
             ]);
 
             let output = '';
             let errorOutput = '';
 
-            this.process.stdout.on('data', (data) => {
+            this.process.stdout.on('data', data => {
                 output += data.toString();
             });
 
-            this.process.stderr.on('data', (data) => {
+            this.process.stderr.on('data', data => {
                 errorOutput += data.toString();
             });
 
-            this.process.on('close', async (code) => {
+            this.process.on('close', async code => {
                 this.process = null;
-                
+
                 if (code === 0 && output.trim()) {
                     const transcription = output.trim();
                     if (transcription && transcription !== this.lastTranscription) {
@@ -105,7 +110,7 @@ class WhisperSTTSession extends EventEmitter {
                             text: transcription,
                             timestamp: Date.now(),
                             confidence: 1.0,
-                            sessionId: this.sessionId
+                            sessionId: this.sessionId,
                         });
                     }
                 } else if (errorOutput) {
@@ -114,7 +119,6 @@ class WhisperSTTSession extends EventEmitter {
 
                 await this.whisperService.cleanupTempFile(tempFile);
             });
-
         } catch (error) {
             console.error('[WhisperSTT] Processing error:', error);
             this.emit('error', error);
@@ -149,7 +153,9 @@ class WhisperSTTSession extends EventEmitter {
             this.audioBuffer = Buffer.concat([this.audioBuffer, audioData]);
             // Log every 10th audio chunk to avoid spam
             if (Math.random() < 0.1) {
-                console.log(`[WhisperSTT-${this.sessionId}] Received audio chunk: ${audioData.length} bytes, total buffer: ${this.audioBuffer.length} bytes`);
+                console.log(
+                    `[WhisperSTT-${this.sessionId}] Received audio chunk: ${audioData.length} bytes, total buffer: ${this.audioBuffer.length} bytes`
+                );
             }
         }
     }
@@ -193,18 +199,18 @@ class WhisperProvider {
 
     async createSTT(config) {
         await this.initialize();
-        
+
         const model = config.model || 'whisper-tiny';
         const sessionType = config.sessionType || 'unknown';
         console.log(`[WhisperProvider] Creating ${sessionType} STT session with model: ${model}`);
-        
+
         // Create unique session ID based on type
         const sessionId = `${sessionType}_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
         const session = new WhisperSTTSession(model, this.whisperService, sessionId);
-        
+
         // Log session creation
         console.log(`[WhisperProvider] Created session: ${sessionId}`);
-        
+
         const initialized = await session.initialize();
         if (!initialized) {
             throw new Error('Failed to initialize Whisper STT session');
@@ -237,5 +243,5 @@ class WhisperProvider {
 
 module.exports = {
     WhisperProvider,
-    WhisperSTTSession
+    WhisperSTTSession,
 };

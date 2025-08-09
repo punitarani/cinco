@@ -6,7 +6,7 @@ const sqliteClient = require('../../services/sqliteClient');
 function getAllModels() {
     const db = sqliteClient.getDb();
     const query = 'SELECT * FROM ollama_models ORDER BY name';
-    
+
     try {
         return db.prepare(query).all() || [];
     } catch (err) {
@@ -21,7 +21,7 @@ function getAllModels() {
 function getModel(name) {
     const db = sqliteClient.getDb();
     const query = 'SELECT * FROM ollama_models WHERE name = ?';
-    
+
     try {
         return db.prepare(query).get(name);
     } catch (err) {
@@ -43,7 +43,7 @@ function upsertModel({ name, size, installed = false, installing = false }) {
             installed = excluded.installed,
             installing = excluded.installing
     `;
-    
+
     try {
         db.prepare(query).run(name, size, installed ? 1 : 0, installing ? 1 : 0);
         return { success: true };
@@ -59,7 +59,7 @@ function upsertModel({ name, size, installed = false, installing = false }) {
 function updateInstallStatus(name, installed, installing = false) {
     const db = sqliteClient.getDb();
     const query = 'UPDATE ollama_models SET installed = ?, installing = ? WHERE name = ?';
-    
+
     try {
         const result = db.prepare(query).run(installed ? 1 : 0, installing ? 1 : 0, name);
         return { success: true, changes: result.changes };
@@ -85,7 +85,7 @@ function initializeDefaultModels() {
 function deleteModel(name) {
     const db = sqliteClient.getDb();
     const query = 'DELETE FROM ollama_models WHERE name = ?';
-    
+
     try {
         const result = db.prepare(query).run(name);
         return { success: true, changes: result.changes };
@@ -101,7 +101,7 @@ function deleteModel(name) {
 function getInstalledModels() {
     const db = sqliteClient.getDb();
     const query = 'SELECT * FROM ollama_models WHERE installed = 1 ORDER BY name';
-    
+
     try {
         return db.prepare(query).all() || [];
     } catch (err) {
@@ -116,7 +116,7 @@ function getInstalledModels() {
 function getInstallingModels() {
     const db = sqliteClient.getDb();
     const query = 'SELECT * FROM ollama_models WHERE installing = 1 ORDER BY name';
-    
+
     try {
         return db.prepare(query).all() || [];
     } catch (err) {
@@ -133,5 +133,5 @@ module.exports = {
     initializeDefaultModels,
     deleteModel,
     getInstalledModels,
-    getInstallingModels
-}; 
+    getInstallingModels,
+};
