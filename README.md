@@ -1,13 +1,4 @@
-Great — love the name **Cinco**. Below are the two files you asked for: `README.md` (user-facing, concise, setup-focused) and `PROJECT.md` (developer-facing, detailed spec, data flow, implementation plan). Both are tailored for a local-first Electron/React desktop app built on top of Pickle Glass (translucent UI) and scoped for a 24-hour hackathon MVP.
-
-Paste these into your repo root. If you want, I can also create a `SAMPLE_DATA/` zip next with the synthetic claims/EOBs mentioned in PROJECT.md.
-
----
-
-````markdown
-# README.md
-
-# Cinco — local-first claims co-pilot for triage, meetings, and appeals
+# Cinco — medical insurance claims co-pilot for triage, meetings, and appeals
 
 <p align="center">
   <img src="./public/assets/cinco-banner.gif" alt="Cinco Banner" />
