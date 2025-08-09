@@ -1,134 +1,180 @@
+Great — love the name **Cinco**. Below are the two files you asked for: `README.md` (user-facing, concise, setup-focused) and `PROJECT.md` (developer-facing, detailed spec, data flow, implementation plan). Both are tailored for a local-first Electron/React desktop app built on top of Pickle Glass (translucent UI) and scoped for a 24-hour hackathon MVP.
+
+Paste these into your repo root. If you want, I can also create a `SAMPLE_DATA/` zip next with the synthetic claims/EOBs mentioned in PROJECT.md.
+
+---
+
+````markdown
+# README.md
+
+# Cinco — local-first claims co-pilot for triage, meetings, and appeals
+
 <p align="center">
-  <a href="https://pickle.com/glass">
-   <img src="./public/assets/banner.gif" alt="Logo">
-  </a>
-
-  <h1 align="center">Glass by Pickle: Digital Mind Extension 🧠</h1>
-
+  <img src="./public/assets/cinco-banner.gif" alt="Cinco Banner" />
 </p>
 
+**Cinco** is a local-first desktop app that helps provider billing teams and patient advocates capture meetings, organize patient/claim data, and rapidly draft auditable, evidence-backed appeal materials — all while keeping data on-device.
 
-<p align="center">
-  <a href="https://discord.gg/UCZH5B5Hpd"><img src="./public/assets/button_dc.png" width="80" alt="Pickle Discord"></a>&ensp;<a href="https://pickle.com"><img src="./public/assets/button_we.png" width="105" alt="Pickle Website"></a>&ensp;<a href="https://x.com/intent/user?screen_name=leinadpark"><img src="./public/assets/button_xe.png" width="109" alt="Follow Daniel"></a>
-</p>
+Think of it as Glass-style translucent AI for denials: always available during conversations, but consent-first and human-in-the-loop. Built on top of Pickle Glass (translucent desktop UI) and optimized for a hackathon MVP where everything runs locally.
 
-> This project is a fork of [CheatingDaddy](https://github.com/sohzm/cheating-daddy) with modifications and enhancements. Thanks to [Soham](https://x.com/soham_btw) and all the open-source contributors who made this possible!
+---
 
-🤖 **Fast, light & open-source**—Glass lives on your desktop, sees what you see, listens in real time, understands your context, and turns every moment into structured knowledge.
+## What, Why, Who (short)
 
-💬 **Proactive in meetings**—it surfaces action items, summaries, and answers the instant you need them.
+- **What:** A desktop app with 3 core features:
+    1. **Patient Registry** — local store of patient profiles, claims, docs, transcripts.
+    2. **Meeting Assistant** — translucent always-on transcript & consent-first retrieval during calls/meetings.
+    3. **Claims Copilot** — RAG-enabled drafts (appeals, emails, peer-to-peer scripts) with source provenance and human approval.
+- **Why:** Claims denials are costly & time-consuming. A local co-pilot speeds triage, improves appeal quality, and preserves an auditable trail without exposing PHI in the cloud (for the demo).
+- **Who (MVP users):** small clinic billing teams, patient advocates, solo billing specialists, or hackathon judges.
 
-🫥️ **Truly invisible**—never shows up in screen recordings, screenshots, or your dock; no always-on capture or hidden sharing.
-
-To have fun building with us, join our [Discord](https://discord.gg/UCZH5B5Hpd)!
-
-## Instant Launch
-
-⚡️  Skip the setup—launch instantly with our ready-to-run macOS app.  [[Download Here]](https://www.dropbox.com/scl/fi/znid09apxiwtwvxer6oc9/Glass_latest.dmg?rlkey=gwvvyb3bizkl25frhs4k1zwds&st=37q31b4w&dl=1)
+---
 
 ## Quick Start (Local Build)
 
 ### Prerequisites
 
-First download & install [Python](https://www.python.org/downloads/) and [Node](https://nodejs.org/en/download).
-If you are using Windows, you need to also install [Build Tools for Visual Studio](https://visualstudio.microsoft.com/downloads/)
+- Node.js **20.x.x** (recommended: nvm install 20)
+- Python 3.10+ (for local STT/ML glue)
+- Git
+- Optional for local models:
+    - [Ollama] or local LLM runtime (if you plan to run a quantized LLM locally)
+    - Local STT (Whisper/whisper.cpp) binaries (we ship integration; model download is separate)
+- macOS / Windows supported (Windows is beta — follow platform prompts in setup)
 
-Ensure you're using Node.js version 20.x.x to avoid build errors with native dependencies.
+Check Node:
 
 ```bash
-# Check your Node.js version
 node --version
-
-# If you need to install Node.js 20.x.x, we recommend using nvm:
-# curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
-# nvm install 20
-# nvm use 20
+# => v20.x.x
 ```
+````
 
-### Installation
+### Install & setup
 
 ```bash
+# clone the repo
+git clone <your-repo-url> cinco
+cd cinco
+
+# top-level setup (installs node modules & python libs, downloads dev models stubs)
 npm run setup
 ```
 
-## Highlights
+`npm run setup` will:
 
+- install frontend packages
+- install backend python venv & python deps (for local STT + helpers)
+- create an encrypted local DB scaffold (no data)
+- drop example synthetic dataset into `./sample_data/` (optional)
 
-### Ask: get answers based on all your previous screen actions & audio
+### Run (development)
 
-<img width="100%" alt="booking-screen" src="./public/assets/00.gif">
+```bash
+# Start the desktop app in dev mode
+npm run dev
+# or to start only the renderer (useful when iterating on UI)
+npm run dev:renderer
+```
 
-### Meetings: real-time meeting notes, live summaries, session records
+### Build (production)
 
-<img width="100%" alt="booking-screen" src="./public/assets/01.gif">
+```bash
+# macOS
+npm run build:mac
 
-### Use your own API key, or sign up to use ours (free)
+# Windows
+npm run build:win
+```
 
-<img width="100%" alt="booking-screen" src="./public/assets/02.gif">
+---
 
-**Currently Supporting:**
-- OpenAI API: Get OpenAI API Key [here](https://platform.openai.com/api-keys)
-- Gemini API: Get Gemini API Key [here](https://aistudio.google.com/apikey)
-- Local LLM Ollama & Whisper
+## Where to put API keys & model choices
 
-### Liquid Glass Design (coming soon)
+Cinco runs locally by default. You can optionally use cloud LLM/STT providers (for experimentation) — configure them in `./config/.env.local`:
 
-<img width="100%" alt="booking-screen" src="./public/assets/03.gif">
+```
+# .env.local (example)
+OPENAI_API_KEY=
+OLLAMA_HOST=localhost:11434
+USE_LOCAL_STT=true
+```
 
-<p>
-  for a more detailed guide, please refer to this <a href="https://www.youtube.com/watch?v=qHg3_4bU1Dw">video.</a>
-  <i style="color:gray; font-weight:300;">
-    we don't waste money on fancy vids; we just code.
-  </i>
-</p>
+**Recommendation for hackathon:** run with local LLM + local STT. If you must test cloud LLMs, do so only with synthetic data.
 
+---
+
+## Main features (quick overview)
+
+### Patient Registry
+
+- Create patient profiles, add claims, attach documents (PDF, images), and view a timeline of events.
+- Document OCR (Tesseract) creates searchable text.
+- Local encrypted storage (SQLCipher) — everything stays on-device.
+
+### Meeting Assistant
+
+- Transcribes mic & optional system audio in real-time.
+- Translucent, always-on widget (like Glass) with live transcript and key-moment highlights.
+- Contextual suggestion bubble: assistant detects questions and offers retrieval options (consent required before any patient data is used).
+- Audit log records every `'fetch'` or `'share'` action.
+
+### Claims Copilot
+
+- One-click “Generate Appeal” from a claim.
+- RAG-based generation using local policy snippets + claim docs.
+- Output: summary, appeal letter draft with source IDs, checklist of attachments, confidence score.
+- Human-in-the-loop approval → export PDF + submission package.
+
+---
+
+## Data & Security
+
+- **Local-only by default:** DB + blobs stored encrypted (SQLCipher + AES-256). Keys stored in OS keychain.
+- **Audit log:** append-only log of generated drafts, approvals, and consent events.
+- **Consent-first:** assistant will never auto-insert patient data without explicit user consent.
+- **Demo constraint:** **Never** run the demo with real PHI unless you have BAAs and a hardened deployment. Use the provided synthetic samples.
+
+---
 
 ## Keyboard Shortcuts
 
-`Ctrl/Cmd + \` : show and hide main window
+- `Ctrl/Cmd + \` — toggle main window
+- `Ctrl/Cmd + Enter` — ask assistant using all previous screen/audio context
+- `Ctrl/Cmd + Arrow` — move overlay position
+- `Ctrl/Cmd + R` — start/stop recording session
 
-`Ctrl/Cmd + Enter` : ask AI using all your previous screen and audio
+---
 
-`Ctrl/Cmd + Arrows` : move main window position
+## Demo scenarios (suggested)
 
-## Repo Activity
+1. **Coding fix** — drag EOB PDF → Cinco extracts denial code → generate appeal to correct missing modifier → export package.
+2. **Medical necessity** — start Meeting Assistant, play synthetic payer call audio, accept assistant suggestion to fetch past imaging notes, approve snippet to share, generate peer-to-peer script and draft appeal.
 
-![Alt](https://repobeats.axiom.co/api/embed/a23e342faafa84fa8797fa57762885d82fac1180.svg "Repobeats analytics image")
+---
 
-## Contributing
+## Contributing & Roadmap
 
-We love contributions! Feel free to open issues for bugs or feature requests. For detailed guide, please see our [contributing guide](/CONTRIBUTING.md).
-> Currently, we're working on a full code refactor and modularization. Once that's completed, we'll jump into addressing the major issues.
+Contributions welcome! See `CONTRIBUTING.md` for details. Planned next steps:
 
-### Contributors
+- Add payer portal adapters (stubbed in hackathon).
+- Integrate stronger on-device LLMs & model selection UI.
+- Pilot with a small clinic using hardened security & BAAs.
 
-<a href="https://github.com/pickle-com/glass/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=pickle-com/glass" />
-</a>
+---
 
-### Help Wanted Issues
+## A note on PHI & production
 
-We have a list of [help wanted](https://github.com/pickle-com/glass/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22%F0%9F%99%8B%E2%80%8D%E2%99%82%EF%B8%8Fhelp%20wanted%22) that contain small features and bugs which have a relatively limited scope. This is a great place to get started, gain experience, and get familiar with our contribution process.
+This repo is **for development and demo only**. Before using real PHI in production:
 
+- Put BAAs in place with any third-party vendor used for STT/LLM/telephony.
+- Implement enterprise-grade key management and endpoint security.
+- Maintain a human-in-the-loop gating and audit process.
 
-### 🛠 Current Issues & Improvements
+---
 
-| Status | Issue                          | Description                                       |
-|--------|--------------------------------|---------------------------------------------------|
-| 🚧 WIP      | Liquid Glass                    | Liquid Glass UI for MacOS 26 |
+## License & Credits
 
-### Changelog
+Cinco is a fork of Pickle Glass and incorporates their translucent UI approach. See `LICENSE` for details and upstream credits.
 
-- Jul 5: Now support Gemini, Intel Mac supported
-- Jul 6: Full code refactoring has done.
-- Jul 7: Now support Claude, LLM/STT model selection
-- Jul 8: Now support Windows(beta), Improved AEC by Rust(to seperate mic/system audio), shortcut editing(beta)
-- Jul 8: Now support Local LLM & STT, Firebase Data Storage 
-
-
-## About Pickle
-
-**Our mission is to build a living digital clone for everyone.** Glass is part of Step 1—a trusted pipeline that transforms your daily data into a scalable clone. Visit [pickle.com](https://pickle.com) to learn more.
-
-## Star History
-[![Star History Chart](https://api.star-history.com/svg?repos=pickle-com/glass&type=Date)](https://www.star-history.com/#pickle-com/glass&Date)
+Built with ❤️ for the hackathon. Want the project spec and developer roadmap? Check `PROJECT.md`.
