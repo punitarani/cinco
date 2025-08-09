@@ -7,7 +7,7 @@ function getById(id) {
 
 function create(uid, type = 'ask') {
     const db = sqliteClient.getDb();
-    const sessionId = require('crypto').randomUUID();
+    const sessionId = require('node:crypto').randomUUID();
     const now = Math.floor(Date.now() / 1000);
     const query = `INSERT INTO sessions (id, uid, title, session_type, started_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`;
 

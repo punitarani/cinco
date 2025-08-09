@@ -34,7 +34,7 @@ function getPresetTemplates() {
 
 function createPreset({ uid, title, prompt }) {
     const db = sqliteClient.getDb();
-    const id = require('crypto').randomUUID();
+    const id = require('node:crypto').randomUUID();
     const now = Math.floor(Date.now() / 1000);
     const query = `
         INSERT INTO prompt_presets (id, uid, title, prompt, is_default, created_at, sync_state)

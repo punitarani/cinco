@@ -1,4 +1,5 @@
 const esbuild = require('esbuild');
+const path = require('node:path');
 
 const baseConfig = {
     bundle: true,

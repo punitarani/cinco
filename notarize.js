@@ -1,6 +1,6 @@
 const { notarize } = require('@electron/notarize');
 
-exports.notarizeApp = async (context) => {
+exports.notarizeApp = async function (context) {
     if (context.electronPlatformName !== 'darwin') {
         return;
     }

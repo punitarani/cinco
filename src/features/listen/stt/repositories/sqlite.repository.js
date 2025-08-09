@@ -3,7 +3,7 @@ const sqliteClient = require('../../../common/services/sqliteClient');
 function addTranscript({ uid, sessionId, speaker, text }) {
     // uid is ignored in the SQLite implementation
     const db = sqliteClient.getDb();
-    const transcriptId = require('crypto').randomUUID();
+    const transcriptId = require('node:crypto').randomUUID();
     const now = Math.floor(Date.now() / 1000);
     const query = `INSERT INTO transcripts (id, session_id, start_at, speaker, text, created_at) VALUES (?, ?, ?, ?, ?, ?)`;
 

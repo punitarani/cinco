@@ -3,7 +3,7 @@ const sqliteClient = require('../../common/services/sqliteClient');
 function addAiMessage({ uid, sessionId, role, content, model = 'unknown' }) {
     // uid is ignored in the SQLite implementation
     const db = sqliteClient.getDb();
-    const messageId = require('crypto').randomUUID();
+    const messageId = require('node:crypto').randomUUID();
     const now = Math.floor(Date.now() / 1000);
     const query = `INSERT INTO ai_messages (id, session_id, sent_at, role, content, model, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
