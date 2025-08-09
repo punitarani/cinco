@@ -39,7 +39,6 @@ Check Node:
 node --version
 # => v20.x.x
 ```
-````
 
 ### Install & setup
 
@@ -166,6 +165,9 @@ This repo is **for development and demo only**. Before using real PHI in product
 
 ## License & Credits
 
-Cinco is a fork of Pickle Glass and incorporates their translucent UI approach. See `LICENSE` for details and upstream credits.
+Cinco is a fork of Pickle Glass and incorporates their translucent UI approach.
+See `LICENSE` for details and upstream credits.
 
-Built with ❤️ for the hackathon. Want the project spec and developer roadmap? Check `PROJECT.md`.
+Want the project spec and developer roadmap? Check `PROJECT.md`.
+
+Built with ❤️ at the OpenAI GPT-5 hackathon.
