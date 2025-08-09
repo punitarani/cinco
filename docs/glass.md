@@ -27,32 +27,35 @@ This section details the architecture of the core desktop application.
 
 The Electron app's logic is primarily built on a **Service-Repository** pattern, with the Views being the HTML/JS files in the `src/app` and `src/features` directories.
 
--   **Views** (`*.html`, `*View.js`): The UI layer. Views are responsible for rendering the interface and capturing user interactions. They are intentionally kept "dumb" and delegate all significant logic to a corresponding Service.
--   **Services** (`*Service.js`): Services contain the application's business logic. They act as the intermediary between Views and Repositories. For example, `sttService` contains the logic for STT, while `summaryService` handles the logic for generating summaries.
--   **Repositories** (`*.repository.js`): Repositories are responsible for all data access. They are the *only* part of the application that directly interacts with `sqliteClient` or `firebaseClient`.
+- **Views** (`*.html`, `*View.js`): The UI layer. Views are responsible for rendering the interface and capturing user interactions. They are intentionally kept "dumb" and delegate all significant logic to a corresponding Service.
+- **Services** (`*Service.js`): Services contain the application's business logic. They act as the intermediary between Views and Repositories. For example, `sttService` contains the logic for STT, while `summaryService` handles the logic for generating summaries.
+- **Repositories** (`*.repository.js`): Repositories are responsible for all data access. They are the _only_ part of the application that directly interacts with `sqliteClient` or `firebaseClient`.
 
 **Location of Modules:**
--   **Feature-Specific**: If a service or repository is used by only one feature, it should reside within that feature's directory (e.g., `src/features/listen/summary/summaryService.js`).
--   **Common**: If a service or repository is shared across multiple features (like `authService` or `userRepository`), it must be placed in `src/common/services/` or `src/common/repositories/` respectively.
+
+- **Feature-Specific**: If a service or repository is used by only one feature, it should reside within that feature's directory (e.g., `src/features/listen/summary/summaryService.js`).
+- **Common**: If a service or repository is shared across multiple features (like `authService` or `userRepository`), it must be placed in `src/common/services/` or `src/common/repositories/` respectively.
 
 ### 2. Data Persistence: The Dual Repository Factory
 
 The application dynamically switches between using the local SQLite database and the cloud-based Firebase Firestore.
 
--   **SQLite**: The default data store for all users, especially those not logged in. This ensures full offline functionality. The low-level client is `src/common/services/sqliteClient.js`.
--   **Firebase**: Used exclusively for users who are authenticated. This enables data synchronization across devices and with the web dashboard.
+- **SQLite**: The default data store for all users, especially those not logged in. This ensures full offline functionality. The low-level client is `src/common/services/sqliteClient.js`.
+- **Firebase**: Used exclusively for users who are authenticated. This enables data synchronization across devices and with the web dashboard.
 
 The selection mechanism is a sophisticated **Factory and Adapter Pattern** located in the `index.js` file of each repository directory (e.g., `src/common/repositories/session/index.js`).
 
 **How it works:**
+
 1.  **Service Call**: A service makes a call to a high-level repository function, like `sessionRepository.create('ask')`. The service is unaware of the user's state or the underlying database.
 2.  **Repository Selection (Factory)**: The `index.js` adapter logic first determines which underlying repository to use. It imports and calls `authService.getCurrentUser()` to check the login state. If the user is logged in, it selects `firebase.repository.js`; otherwise, it defaults to `sqlite.repository.js`.
 3.  **UID Injection (Adapter)**: The adapter then retrieves the current user's ID (`uid`) from `authService.getCurrentUserId()`. It injects this `uid` into the actual, low-level repository call (e.g., `firebaseRepository.create(uid, 'ask')`).
 4.  **Execution**: The selected repository (`sqlite` or `firebase`) executes the data operation.
 
 This powerful pattern accomplishes two critical goals:
--   It makes the services completely agnostic about the underlying data source.
--   It frees the services from the responsibility of managing and passing user IDs for every database query.
+
+- It makes the services completely agnostic about the underlying data source.
+- It frees the services from the responsibility of managing and passing user IDs for every database query.
 
 **Visualizing the Data Flow**
 
@@ -115,12 +118,12 @@ sequenceDiagram
 
     FE->>+BE: 1. HTTP GET /api/local-data
     Note over BE: Receives local data request
-    
+
     BE->>+Main: 2. ipcRequest('get-data', responseChannel)
     Note over Main: Receives request, fetches data from SQLite<br/>via Service/Repository
-    
+
     Main-->>-BE: 3. ipcResponse on responseChannel (data)
     Note over BE: Receives data, prepares HTTP response
-    
+
     BE-->>-FE: 4. HTTP 200 OK (JSON data)
 ```
