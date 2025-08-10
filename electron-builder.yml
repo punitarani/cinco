@@ -1,23 +1,23 @@
 # electron-builder.yml
 
 # The unique application ID
-appId: com.pickle.glass
+appId: com.cinco.cinco
 
 # The user-facing application name
-productName: Glass
+productName: Cinco
 
 # Publish configuration for GitHub releases
 publish:
     provider: github
-    owner: pickle-com
-    repo: glass
+    owner: cinco
+    repo: cinco
     releaseType: draft
 
 # Protocols configuration for deep linking
 protocols:
-    name: PickleGlass Protocol
+    name: Cinco
     schemes: 
-        - pickleglass
+        - cinco
 
 # List of files to be included in the app package
 files:
@@ -47,10 +47,10 @@ win:
           arch: x64
     requestedExecutionLevel: asInvoker
     signAndEditExecutable: true
-    cscLink: build\certs\glass-dev.pfx
+    cscLink: build\certs\cinco-dev.pfx
     cscKeyPassword: "${env.CSC_KEY_PASSWORD}"
     signtoolOptions:
-      certificateSubjectName: "Glass Dev Code Signing"
+      certificateSubjectName: "Cinco Dev Code Signing"
 
 # NSIS installer configuration for Windows
 nsis:
@@ -60,7 +60,7 @@ nsis:
     deleteAppDataOnUninstall: true
     createDesktopShortcut: always
     createStartMenuShortcut: true
-    shortcutName: Glass
+    shortcutName: Cinco
 
 # macOS specific configuration
 mac:
