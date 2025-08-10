@@ -1,6 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
+import { StatusBadge } from "@/components/status-badge";
 
 export type Procedure = {
   cpt: string;
@@ -26,7 +27,11 @@ export const claimColumns: ColumnDef<Claim>[] = [
   { accessorKey: "patient", header: "Patient" },
   { accessorKey: "dos", header: "DOS" },
   { accessorKey: "insurance", header: "Insurance" },
-  { accessorKey: "status", header: "Status" },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => <StatusBadge status={String(row.getValue("status") ?? "")} />,
+  },
   { accessorKey: "id", header: "Claim #" },
   {
     accessorKey: "billed",

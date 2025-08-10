@@ -1,5 +1,6 @@
 "use client";
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { type Patient } from "./columns";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Mail, Phone, CalendarDays, ShieldCheck, FileText, Stethoscope, HeartPulse, Activity, UserRound, Users } from "lucide-react";
 
 export function PatientsClient({ patients }: { patients: Patient[] }) {
+  const router = useRouter();
   const [selectedId, setSelectedId] = React.useState<string | null>(patients[0]?.id ?? null);
   const p = patients.find(x => x.id === selectedId) ?? patients[0];
 
@@ -101,7 +103,7 @@ export function PatientsClient({ patients }: { patients: Patient[] }) {
       )}
 
       <div className="flex justify-end">
-        <Button>View claims</Button>
+        <Button onClick={() => p && router.push(`/patients/${p.id}/claims`)}>View claims</Button>
       </div>
     </div>
   );
