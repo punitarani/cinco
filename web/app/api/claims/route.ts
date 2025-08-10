@@ -1,32 +1,25 @@
 import { NextRequest } from "next/server";
-import { sql } from "drizzle-orm";
-import { db } from "@/db";
+import { Pool } from "pg";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+const connectionString = process.env.DATABASE_URL ?? "postgres://postgres:postgres@localhost:5432/cinco";
+// Reuse a single pool in dev
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _pool: any;
+function getPool() {
+  if (!_pool) _pool = new Pool({ connectionString });
+  return _pool as Pool;
+}
 
 export async function GET(_req: NextRequest) {
-  const result = await db.execute(sql`
-    select c.id,
-           c.claim_number,
-           c.status,
-           c.service_dates,
-           c.billed_amount,
-           c.allowed_amount,
-           c.paid_amount,
-           c.denied_amount,
-           c.claim_data,
-           p.first_name,
-           p.last_name,
-           ip.name as insurance_name
-      from claims c
-      join patients p on p.id = c.patient_id
-      left join insurance_providers ip on ip.id = c.insurance_provider_id
-     order by c.id
-     limit 200
-  `);
-
-  const rows: any[] = (result as any)?.rows ?? (result as any);
+  const pool = getPool();
+  const { rows } = await pool.query(
+    `select c.id, c.claim_number, c.status, c.service_dates, c.billed_amount, c.allowed_amount, c.paid_amount, c.denied_amount, c.claim_data,
+            p.first_name, p.last_name, ip.name as insurance_name
+       from claims c
+       join patients p on p.id = c.patient_id
+       left join insurance_providers ip on ip.id = c.insurance_provider_id
+       order by c.id limit 200`
+  );
 
   const data = rows.map((r: any) => {
     const lines = Array.isArray(r.claim_data?.lines) ? r.claim_data.lines : [];
