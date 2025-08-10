@@ -1,4 +1,5 @@
 import { index, integer, jsonb, pgTable, serial, timestamp, varchar } from 'drizzle-orm/pg-core';
+import type { EventData } from '../types';
 import { claims } from './claims';
 
 export const claimEvents = pgTable(
@@ -10,7 +11,7 @@ export const claimEvents = pgTable(
             length: 64,
             enum: ['submission', 'eob_received', 'appeal_drafted', 'payment', 'note', 'adjustment', 'other'],
         }),
-        eventData: jsonb('event_data'),
+        eventData: jsonb('event_data').$type<EventData>(),
         createdAt: timestamp('created_at')
             .$defaultFn(() => new Date())
             .notNull(),

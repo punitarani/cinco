@@ -1,6 +1,7 @@
 import { index, integer, jsonb, pgTable, serial, text, timestamp, unique, varchar } from 'drizzle-orm/pg-core';
-import { patients } from './patients';
+import type { ClaimData, ServiceDates } from '../types';
 import { insuranceProviders } from './insuranceProviders';
+import { patients } from './patients';
 
 export const claims = pgTable(
     'claims',
@@ -9,11 +10,11 @@ export const claims = pgTable(
         patientId: integer('patient_id').references(() => patients.id, { onDelete: 'cascade' }),
         insuranceProviderId: integer('insurance_provider_id').references(() => insuranceProviders.id, { onDelete: 'set null' }),
         claimNumber: varchar('claim_number', { length: 120 }),
-        claimData: jsonb('claim_data'),
+        claimData: jsonb('claim_data').$type<ClaimData>(),
         status: text('status', {
             enum: ['draft', 'submitted', 'processed', 'denied', 'partially_paid', 'paid', 'appealed', 'closed', 'planned'],
         }),
-        serviceDates: jsonb('service_dates'),
+        serviceDates: jsonb('service_dates').$type<ServiceDates>(),
         billedAmount: integer('billed_amount'),
         allowedAmount: integer('allowed_amount'),
         paidAmount: integer('paid_amount'),

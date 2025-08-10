@@ -1,4 +1,5 @@
-import { index, integer, jsonb, pgTable, serial, text, timestamp, unique, varchar } from 'drizzle-orm/pg-core';
+import { index, integer, jsonb, pgTable, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import type { DocumentMetadata } from '../types';
 import { claims } from './claims';
 import { patients } from './patients';
 
@@ -12,7 +13,7 @@ export const documents = pgTable(
             length: 64,
             enum: ['EOB', 'CMS1500', 'NOTE', 'TRANSCRIPT', 'AUDIO', 'IMAGE', 'APPEAL', 'OTHER'],
         }),
-        metadata: jsonb('metadata'),
+        metadata: jsonb('metadata').$type<DocumentMetadata>(),
         fileName: varchar('file_name', { length: 255 }),
         filePath: text('file_path'),
         sha256: varchar('sha256', { length: 128 }),
