@@ -48,12 +48,20 @@ export default function ClaimsPage() {
           <CardTitle>Claims</CardTitle>
         </CardHeader>
         <CardContent>
+          {loading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+          ) : (
           <DataTable
             className="text-[0.95rem]"
             columns={claimColumns}
             data={data}
             onRowClick={row => router.push(`/claims/${(row as any).id}`)}
           />
+          )}
         </CardContent>
       </Card>
     </div>
