@@ -70,6 +70,22 @@ const cancelHideSettingsWindow = () => {
     internalBridge.emit('window:requestVisibility', { name: 'settings', visible: true });
 };
 
+const showAdminPanel = () => {
+    // Create admin panel on demand if it doesn't exist
+    if (!windowPool.has('admin-panel') || windowPool.get('admin-panel').isDestroyed()) {
+        createFeatureWindows(windowPool.get('header'), 'admin-panel');
+    }
+    internalBridge.emit('window:requestVisibility', { name: 'admin-panel', visible: true });
+};
+
+const hideAdminPanel = () => {
+    internalBridge.emit('window:requestVisibility', { name: 'admin-panel', visible: false });
+};
+
+const cancelHideAdminPanel = () => {
+    internalBridge.emit('window:requestVisibility', { name: 'admin-panel', visible: true });
+};
+
 const moveWindowStep = direction => {
     internalBridge.emit('window:moveStep', { direction });
 };
@@ -249,7 +265,7 @@ function changeAllWindowsVisibility(windowPool, targetVisibility) {
  * @param {Map<string, BrowserWindow>} windowPool
  * @param {WindowLayoutManager} layoutManager
  * @param {SmoothMovementManager} movementManager
- * @param {'listen' | 'ask' | 'settings' | 'shortcut-settings'} name
+ * @param {'listen' | 'ask' | 'settings' | 'admin-panel' | 'shortcut-settings'} name
  * @param {boolean} shouldBeVisible
  */
 async function handleWindowVisibilityRequest(windowPool, layoutManager, movementManager, name, shouldBeVisible) {
@@ -261,7 +277,7 @@ async function handleWindowVisibilityRequest(windowPool, layoutManager, movement
         return;
     }
 
-    if (name !== 'settings') {
+    if (name !== 'settings' && name !== 'admin-panel') {
         const isCurrentlyVisible = win.isVisible();
         if (isCurrentlyVisible === shouldBeVisible) {
             console.log(`[WindowManager] Window '${name}' is already in the desired state.`);
@@ -314,6 +330,28 @@ async function handleWindowVisibilityRequest(windowPool, layoutManager, movement
             }, 200);
 
             win.__lockedByButton = false;
+        }
+        return;
+    }
+
+    if (name === 'admin-panel') {
+        if (shouldBeVisible) {
+            const position = layoutManager.calculateAdminPanelPosition();
+            if (position) {
+                win.setBounds(position);
+                win.show();
+                win.moveTop();
+                win.setAlwaysOnTop(true);
+            } else {
+                console.warn('[WindowManager] Could not calculate admin panel position.');
+                win.show();
+                win.center();
+                win.moveTop();
+                win.setAlwaysOnTop(true);
+            }
+        } else {
+            win.setAlwaysOnTop(false);
+            win.hide();
         }
         return;
     }
@@ -513,7 +551,47 @@ function createFeatureWindows(header, namesToCreate) {
                 break;
             }
 
-            // settings
+            // admin-panel
+            case 'admin-panel': {
+                const adminPanel = new BrowserWindow({
+                    ...commonChildOptions,
+                    width: 1000,
+                    height: 750,
+                    parent: undefined,
+                    center: true,
+                    resizable: true,
+                    minWidth: 800,
+                    minHeight: 600,
+                    maxWidth: 1200,
+                    maxHeight: 900,
+                });
+                adminPanel.setContentProtection(isContentProtectionOn);
+                adminPanel.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+                if (process.platform === 'darwin') {
+                    adminPanel.setWindowButtonVisibility(false);
+                }
+
+                if (!shouldUseLiquidGlass) {
+                    adminPanel.loadFile(path.join(__dirname, '../ui/app/admin.html')).catch(console.error);
+                } else {
+                    const adminLoadOptions = { query: { glass: 'true' } };
+                    adminPanel.loadFile(path.join(__dirname, '../ui/app/admin.html'), adminLoadOptions).catch(console.error);
+                    adminPanel.webContents.once('did-finish-load', () => {
+                        const viewId = liquidGlass.addView(adminPanel.getNativeWindowHandle());
+                        if (viewId !== -1) {
+                            liquidGlass.unstable_setVariant(viewId, liquidGlass.GlassMaterialVariant.bubbles);
+                        }
+                    });
+                }
+                windowPool.set('admin-panel', adminPanel);
+
+                if (!app.isPackaged) {
+                    adminPanel.webContents.openDevTools({ mode: 'detach' });
+                }
+                break;
+            }
+
+            // settings (legacy - keeping for compatibility)
             case 'settings': {
                 const settings = new BrowserWindow({ ...commonChildOptions, width: 240, maxHeight: 400, parent: undefined });
                 settings.setContentProtection(isContentProtectionOn);
@@ -597,7 +675,7 @@ function createFeatureWindows(header, namesToCreate) {
 }
 
 function destroyFeatureWindows() {
-    const featureWindows = ['listen', 'ask', 'settings', 'shortcut-settings'];
+    const featureWindows = ['listen', 'ask', 'settings', 'admin-panel', 'shortcut-settings'];
     if (settingsHideTimer) {
         clearTimeout(settingsHideTimer);
         settingsHideTimer = null;
@@ -779,6 +857,9 @@ module.exports = {
     showSettingsWindow,
     hideSettingsWindow,
     cancelHideSettingsWindow,
+    showAdminPanel,
+    hideAdminPanel,
+    cancelHideAdminPanel,
     openLoginPage,
     moveWindowStep,
     handleHeaderStateChanged,

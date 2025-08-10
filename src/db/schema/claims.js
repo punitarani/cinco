@@ -1,20 +1,23 @@
-import { index, integer, jsonb, pgTable, serial, text, timestamp, unique, varchar } from 'drizzle-orm/pg-core';
-import type { ClaimData, ServiceDates } from '../types';
-import { insuranceProviders } from './insuranceProviders';
-import { patients } from './patients';
+const { index, integer, jsonb, pgTable, serial, text, timestamp, unique, varchar } = require('drizzle-orm/pg-core');
+const { insuranceProviders } = require('./insuranceProviders');
+const { patients } = require('./patients');
 
-export const claims = pgTable(
+/**
+ * Claims table schema
+ * Stores insurance claim information and status
+ */
+const claims = pgTable(
     'claims',
     {
         id: serial('id').primaryKey(),
         patientId: integer('patient_id').references(() => patients.id, { onDelete: 'cascade' }),
         insuranceProviderId: integer('insurance_provider_id').references(() => insuranceProviders.id, { onDelete: 'set null' }),
         claimNumber: varchar('claim_number', { length: 120 }),
-        claimData: jsonb('claim_data').$type<ClaimData>(),
+        claimData: jsonb('claim_data'), // ClaimData type
         status: text('status', {
             enum: ['draft', 'submitted', 'processed', 'denied', 'partially_paid', 'paid', 'appealed', 'closed', 'planned'],
         }),
-        serviceDates: jsonb('service_dates').$type<ServiceDates>(),
+        serviceDates: jsonb('service_dates'), // ServiceDates type
         billedAmount: integer('billed_amount'),
         allowedAmount: integer('allowed_amount'),
         paidAmount: integer('paid_amount'),
@@ -32,3 +35,5 @@ export const claims = pgTable(
         index('idx_claims_insurance').on(table.insuranceProviderId),
     ]
 );
+
+module.exports = { claims };

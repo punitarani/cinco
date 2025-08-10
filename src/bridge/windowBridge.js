@@ -14,6 +14,9 @@ module.exports = {
         ipcMain.on('show-settings-window', () => windowManager.showSettingsWindow());
         ipcMain.on('hide-settings-window', () => windowManager.hideSettingsWindow());
         ipcMain.on('cancel-hide-settings-window', () => windowManager.cancelHideSettingsWindow());
+        ipcMain.on('show-admin-panel', () => windowManager.showAdminPanel());
+        ipcMain.on('hide-admin-panel', () => windowManager.hideAdminPanel());
+        ipcMain.on('cancel-hide-admin-panel', () => windowManager.cancelHideAdminPanel());
 
         ipcMain.handle('open-login-page', () => windowManager.openLoginPage());
         ipcMain.handle('open-personalize-page', () => windowManager.openLoginPage());

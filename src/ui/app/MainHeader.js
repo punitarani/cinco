@@ -5,6 +5,7 @@ export class MainHeader extends LitElement {
         isTogglingSession: { type: Boolean, state: true },
         shortcuts: { type: Object, state: true },
         listenSessionStatus: { type: String, state: true },
+        isAdminPanelOpen: { type: Boolean, state: true },
     };
 
     static styles = css`
@@ -349,6 +350,7 @@ export class MainHeader extends LitElement {
         this.settingsHideTimer = null;
         this.isTogglingSession = false;
         this.listenSessionStatus = 'beforeSession';
+        this.isAdminPanelOpen = false;
         this.animationEndTimer = null;
         this.handleAnimationEnd = this.handleAnimationEnd.bind(this);
         this.handleMouseMove = this.handleMouseMove.bind(this);
@@ -475,6 +477,12 @@ export class MainHeader extends LitElement {
         super.connectedCallback();
         this.addEventListener('animationend', this.handleAnimationEnd);
 
+        // Listen for admin panel close events
+        this.adminPanelCloseListener = () => {
+            this.isAdminPanelOpen = false;
+        };
+        window.addEventListener('admin-panel-closed', this.adminPanelCloseListener);
+
         if (window.api) {
             this._sessionStateTextListener = (event, { success }) => {
                 if (success) {
@@ -503,6 +511,11 @@ export class MainHeader extends LitElement {
         super.disconnectedCallback();
         this.removeEventListener('animationend', this.handleAnimationEnd);
 
+        // Clean up admin panel listener
+        if (this.adminPanelCloseListener) {
+            window.removeEventListener('admin-panel-closed', this.adminPanelCloseListener);
+        }
+
         if (this.animationEndTimer) {
             clearTimeout(this.animationEndTimer);
             this.animationEndTimer = null;
@@ -521,16 +534,31 @@ export class MainHeader extends LitElement {
     showSettingsWindow(element) {
         if (this.wasJustDragged) return;
         if (window.api) {
-            console.log(`[MainHeader] showSettingsWindow called at ${Date.now()}`);
-            window.api.mainHeader.showSettingsWindow();
+            console.log(`[MainHeader] showAdminPanel called at ${Date.now()}`);
+            window.api.mainHeader.showAdminPanel();
         }
     }
 
     hideSettingsWindow() {
         if (this.wasJustDragged) return;
         if (window.api) {
-            console.log(`[MainHeader] hideSettingsWindow called at ${Date.now()}`);
-            window.api.mainHeader.hideSettingsWindow();
+            console.log(`[MainHeader] hideAdminPanel called at ${Date.now()}`);
+            window.api.mainHeader.hideAdminPanel();
+        }
+    }
+
+    toggleAdminPanel() {
+        if (this.wasJustDragged) return;
+        if (window.api) {
+            if (this.isAdminPanelOpen) {
+                console.log(`[MainHeader] Closing admin panel`);
+                window.api.mainHeader.hideAdminPanel();
+                this.isAdminPanelOpen = false;
+            } else {
+                console.log(`[MainHeader] Opening admin panel`);
+                window.api.mainHeader.showAdminPanel();
+                this.isAdminPanelOpen = true;
+            }
         }
     }
 
@@ -678,8 +706,7 @@ export class MainHeader extends LitElement {
 
                 <button 
                     class="settings-button"
-                    @mouseenter=${e => this.showSettingsWindow(e.currentTarget)}
-                    @mouseleave=${() => this.hideSettingsWindow()}
+                    @click=${() => this.toggleAdminPanel()}
                 >
                     <div class="settings-icon">
                         <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">

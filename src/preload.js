@@ -111,6 +111,11 @@ contextBridge.exposeInMainWorld('api', {
         showSettingsWindow: () => ipcRenderer.send('show-settings-window'),
         hideSettingsWindow: () => ipcRenderer.send('hide-settings-window'),
 
+        // Admin Panel Management
+        showAdminPanel: () => ipcRenderer.send('show-admin-panel'),
+        hideAdminPanel: () => ipcRenderer.send('hide-admin-panel'),
+        cancelHideAdminPanel: () => ipcRenderer.send('cancel-hide-admin-panel'),
+
         // Generic invoke (for dynamic channel names)
         // invoke: (channel, ...args) => ipcRenderer.invoke(channel, ...args),
         sendListenButtonClick: listenButtonText => ipcRenderer.invoke('listen:changeSession', listenButtonText),

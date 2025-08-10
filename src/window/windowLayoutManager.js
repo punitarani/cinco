@@ -90,6 +90,41 @@ class WindowLayoutManager {
         return { x: Math.round(clampedX), y: Math.round(clampedY) };
     }
 
+    /**
+     * @returns {{x: number, y: number, width: number, height: number} | null}
+     */
+    calculateAdminPanelPosition() {
+        const header = this.windowPool.get('header');
+        const adminPanel = this.windowPool.get('admin-panel');
+
+        if (!header || header.isDestroyed() || !adminPanel || adminPanel.isDestroyed()) {
+            return null;
+        }
+
+        const headerBounds = header.getBounds();
+        const adminPanelBounds = adminPanel.getBounds();
+        const display = getCurrentDisplay(header);
+        const { x: workAreaX, y: workAreaY, width: screenWidth, height: screenHeight } = display.workArea;
+
+        const PAD = 10; // Slightly more padding for the larger panel
+
+        // Center the admin panel horizontally relative to the header
+        const x = headerBounds.x + (headerBounds.width - adminPanelBounds.width) / 2;
+        // Position it below the header with some padding
+        const y = headerBounds.y + headerBounds.height + PAD;
+
+        // Ensure the panel fits within the screen bounds
+        const clampedX = Math.max(workAreaX + 10, Math.min(workAreaX + screenWidth - adminPanelBounds.width - 10, x));
+        const clampedY = Math.max(workAreaY + 10, Math.min(workAreaY + screenHeight - adminPanelBounds.height - 10, y));
+
+        return {
+            x: Math.round(clampedX),
+            y: Math.round(clampedY),
+            width: adminPanelBounds.width,
+            height: adminPanelBounds.height,
+        };
+    }
+
     calculateHeaderResize(header, { width, height }) {
         if (!header) return null;
         const currentBounds = header.getBounds();

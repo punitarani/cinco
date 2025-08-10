@@ -1,8 +1,11 @@
-import { index, integer, jsonb, pgTable, serial, timestamp, varchar } from 'drizzle-orm/pg-core';
-import type { EventData } from '../types';
-import { claims } from './claims';
+const { index, integer, jsonb, pgTable, serial, timestamp, varchar } = require('drizzle-orm/pg-core');
+const { claims } = require('./claims');
 
-export const claimEvents = pgTable(
+/**
+ * Claim events table schema
+ * Stores events and activities related to insurance claims
+ */
+const claimEvents = pgTable(
     'claim_events',
     {
         id: serial('id').primaryKey(),
@@ -11,10 +14,12 @@ export const claimEvents = pgTable(
             length: 64,
             enum: ['submission', 'eob_received', 'appeal_drafted', 'payment', 'note', 'adjustment', 'other'],
         }),
-        eventData: jsonb('event_data').$type<EventData>(),
+        eventData: jsonb('event_data'), // EventData type
         createdAt: timestamp('created_at')
             .$defaultFn(() => new Date())
             .notNull(),
     },
     table => [index('idx_claim_events_claim').on(table.claimId)]
 );
+
+module.exports = { claimEvents };

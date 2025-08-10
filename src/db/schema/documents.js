@@ -1,9 +1,12 @@
-import { index, integer, jsonb, pgTable, serial, text, timestamp, varchar } from 'drizzle-orm/pg-core';
-import type { DocumentMetadata } from '../types';
-import { claims } from './claims';
-import { patients } from './patients';
+const { index, integer, jsonb, pgTable, serial, text, timestamp, varchar } = require('drizzle-orm/pg-core');
+const { claims } = require('./claims');
+const { patients } = require('./patients');
 
-export const documents = pgTable(
+/**
+ * Documents table schema
+ * Stores file information and metadata for patient documents
+ */
+const documents = pgTable(
     'documents',
     {
         id: serial('id').primaryKey(),
@@ -13,7 +16,7 @@ export const documents = pgTable(
             length: 64,
             enum: ['EOB', 'CMS1500', 'NOTE', 'TRANSCRIPT', 'AUDIO', 'IMAGE', 'APPEAL', 'OTHER'],
         }),
-        metadata: jsonb('metadata').$type<DocumentMetadata>(),
+        metadata: jsonb('metadata'), // DocumentMetadata type
         fileName: varchar('file_name', { length: 255 }),
         filePath: text('file_path'),
         sha256: varchar('sha256', { length: 128 }),
@@ -23,3 +26,5 @@ export const documents = pgTable(
     },
     table => [index('idx_documents_patient').on(table.patientId), index('idx_documents_claim').on(table.claimId)]
 );
+
+module.exports = { documents };
